@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日花卉推荐 - 紫薇</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #D946EF 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .svg-container {
+            background: linear-gradient(180deg, #faf0ff 0%, #f0e6ff 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #8B5CF6;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #8B5CF6;
+        }
+        
+        .section h2 {
+            color: #8B5CF6;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2 .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .section p {
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .poem {
+            font-style: italic;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #e91e63;
+            margin: 15px 0;
+        }
+        
+        .poem .author {
+            text-align: right;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .info-item .label {
+            font-weight: bold;
+            color: #8B5CF6;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-item .value {
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .feature-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .feature-item .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .timeline-item.active {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+            color: white;
+        }
+        
+        .timeline-item .month {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-item .description {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .memory-tip {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .memory-tip .tip-content {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2e7d32;
+            line-height: 1.6;
+        }
+        
+        .relatives {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .relative-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .relative-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .relative-item .name {
+            font-weight: bold;
+            color: #8B5CF6;
+            margin-bottom: 5px;
+        }
+        
+        .relative-item .latin {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .identification {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .identification .title {
+            font-weight: bold;
+            color: #f57f17;
+            margin-bottom: 10px;
+        }
+        
+        .identification ul {
+            margin-left: 20px;
+        }
+        
+        .identification li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .date {
+            color: #d4c4fb;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .info-grid, .features, .relatives {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 每日花卉推荐</h1>
+            <div class="subtitle">紫薇 - 百日红的夏日浪漫</div>
+            <div class="date">2026年6月10日 星期三</div>
+        </div>
+        
+        <div class="svg-container">
+            <svg width="500" height="380" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
+                <!-- 背景天空 -->
+                <defs>
+                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E8F4FD;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#8B7355;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#A0926B;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#8B7355;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#2E8B57;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+                    </linearGradient>
+                    <radialGradient id="flowerGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#FF8FAB;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#C71585;stop-opacity:1" />
+                    </radialGradient>
+                    <radialGradient id="flowerCenter" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+                    </radialGradient>
+                </defs>
+                
+                <rect width="500" height="380" fill="url(#skyGradient)"/>
+                
+                <!-- 远山 -->
+                <path d="M0 300 Q50 260 100 280 Q150 240 200 260 Q250 220 300 250 Q350 210 400 240 Q450 200 500 230 L500 380 L0 380 Z" 
+                      fill="#B8D4E3" opacity="0.4"/>
+                
+                <!-- 地面 -->
+                <rect y="320" width="500" height="60" fill="#90B860"/>
+                <rect y="320" width="500" height="5" fill="#7DA850"/>
+                
+                <!-- 紫薇树干（光滑，痒痒树特征） -->
+                <path d="M250 380 L250 200 Q245 180 240 170 Q230 150 220 140 L220 130 
+                         Q235 125 250 120 Q265 125 280 130 L280 140 
+                         Q270 150 260 170 Q255 180 250 200" 
+                      fill="url(#trunkGradient)" stroke="#6B5B3E" stroke-width="1.5"/>
+                
+                <!-- 树干光滑质感纹理 -->
+                <path d="M248 370 L248 200" stroke="#A89870" stroke-width="0.8" opacity="0.5"/>
+                <path d="M252 370 L252 200" stroke="#A89870" stroke-width="0.8" opacity="0.5"/>
+                
+                <!-- 主分枝 -->
+                <path d="M250 200 L180 130 Q175 125 170 128 L168 135 Q172 140 178 145 L250 200" 
+                      fill="#8B7355" stroke="#6B5B3E" stroke-width="1"/>
+                <path d="M250 200 L320 130 Q325 125 330 128 L332 135 Q328 140 322 145 L250 200" 
+                      fill="#8B7355" stroke="#6B5B3E" stroke-width="1"/>
+                <path d="M250 180 L200 100 Q195 95 190 98 L188 105 Q192 110 198 115 L250 180" 
+                      fill="#8B7355" stroke="#6B5B3E" stroke-width="1"/>
+                <path d="M250 180 L300 100 Q305 95 310 98 L312 105 Q308 110 302 115 L250 180" 
+                      fill="#8B7355" stroke="#6B5B3E" stroke-width="1"/>
+                
+                <!-- 叶片（椭圆形对生叶） -->
+                <g fill="url(#leafGradient)">
+                    <!-- 左侧枝叶 -->
+                    <ellipse cx="165" cy="125" rx="22" ry="10" transform="rotate(-25, 165, 125)"/>
+                    <ellipse cx="175" cy="115" rx="20" ry="9" transform="rotate(-35, 175, 115)"/>
+                    <ellipse cx="155" cy="130" rx="18" ry="8" transform="rotate(-15, 155, 130)"/>
+                    <ellipse cx="185" cy="140" rx="20" ry="9" transform="rotate(-20, 185, 140)"/>
+                    
+                    <!-- 右侧枝叶 -->
+                    <ellipse cx="335" cy="125" rx="22" ry="10" transform="rotate(25, 335, 125)"/>
+                    <ellipse cx="325" cy="115" rx="20" ry="9" transform="rotate(35, 325, 115)"/>
+                    <ellipse cx="345" cy="130" rx="18" ry="8" transform="rotate(15, 345, 130)"/>
+                    <ellipse cx="315" cy="140" rx="20" ry="9" transform="rotate(20, 315, 140)"/>
+                    
+                    <!-- 顶部枝叶 -->
+                    <ellipse cx="195" cy="95" rx="20" ry="9" transform="rotate(-40, 195, 95)"/>
+                    <ellipse cx="185" cy="88" rx="18" ry="8" transform="rotate(-50, 185, 88)"/>
+                    <ellipse cx="205" cy="100" rx="16" ry="7" transform="rotate(-30, 205, 100)"/>
+                    
+                    <ellipse cx="305" cy="95" rx="20" ry="9" transform="rotate(40, 305, 95)"/>
+                    <ellipse cx="315" cy="88" rx="18" ry="8" transform="rotate(50, 315, 88)"/>
+                    <ellipse cx="295" cy="100" rx="16" ry="7" transform="rotate(30, 295, 100)"/>
+                    
+                    <!-- 散叶 -->
+                    <ellipse cx="220" cy="75" rx="15" ry="7" transform="rotate(-20, 220, 75)"/>
+                    <ellipse cx="280" cy="75" rx="15" ry="7" transform="rotate(20, 280, 75)"/>
+                    <ellipse cx="250" cy="70" rx="14" ry="6" transform="rotate(0, 250, 70)"/>
+                </g>
+                
+                <!-- 紫薇花簇（伞房花序，皱缩花瓣） -->
+                <!-- 左侧大花簇 -->
+                <g transform="translate(175, 90)">
+                    <!-- 花朵1 -->
+                    <g transform="translate(0, 0) scale(1)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <!-- 花朵2 -->
+                    <g transform="translate(-12, -8) scale(0.8)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <!-- 花朵3 -->
+                    <g transform="translate(12, -5) scale(0.9)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <!-- 花朵4 -->
+                    <g transform="translate(-8, 10) scale(0.7)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2.5" fill="url(#flowerCenter)"/>
+                    </g>
+                    <!-- 花朵5 -->
+                    <g transform="translate(8, 12) scale(0.6)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2" fill="url(#flowerCenter)"/>
+                    </g>
+                </g>
+                
+                <!-- 右侧大花簇 -->
+                <g transform="translate(325, 85)">
+                    <g transform="translate(0, 0) scale(1)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(-12, -8) scale(0.8)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(12, -5) scale(0.9)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(-8, 10) scale(0.7)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2.5" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(8, 12) scale(0.6)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2" fill="url(#flowerCenter)"/>
+                    </g>
+                </g>
+                
+                <!-- 顶部花簇 -->
+                <g transform="translate(250, 55)">
+                    <g transform="translate(0, 0) scale(1.1)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(-14, -10) scale(0.8)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(14, -8) scale(0.85)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="3" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(-10, 12) scale(0.65)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2" fill="url(#flowerCenter)"/>
+                    </g>
+                    <g transform="translate(10, 14) scale(0.55)">
+                        <path d="M0 -12 Q3 -8 2 -3 Q5 -5 8 -2 Q5 0 3 1 Q6 3 5 6 Q3 4 1 3 Q0 6 -2 6 Q-2 3 -5 6 Q-6 3 -3 1 Q-5 0 -8 -2 Q-5 -5 -2 -3 Q-3 -8 0 -12" 
+                              fill="url(#flowerGradient)" stroke="#B03060" stroke-width="0.5"/>
+                        <circle cx="0" cy="0" r="2" fill="url(#flowerCenter)"/>
+                    </g>
+                </g>
+                
+                <!-- 花苞 -->
+                <g transform="translate(145, 80)">
+                    <ellipse cx="0" cy="0" rx="5" ry="8" fill="#E75480" stroke="#B03060" stroke-width="0.8"/>
+                    <line x1="0" y1="-8" x2="0" y2="-12" stroke="#228B22" stroke-width="1"/>
+                </g>
+                <g transform="translate(355, 78)">
+                    <ellipse cx="0" cy="0" rx="5" ry="8" fill="#E75480" stroke="#B03060" stroke-width="0.8"/>
+                    <line x1="0" y1="-8" x2="0" y2="-12" stroke="#228B22" stroke-width="1"/>
+                </g>
+                <g transform="translate(225, 45)">
+                    <ellipse cx="0" cy="0" rx="4" ry="6" fill="#E75480" stroke="#B03060" stroke-width="0.8"/>
+                    <line x1="0" y1="-6" x2="0" y2="-10" stroke="#228B22" stroke-width="1"/>
+                </g>
+                
+                <!-- 蜜蜂 -->
+                <g transform="translate(380, 110) scale(0.7)">
+                    <ellipse cx="0" cy="0" rx="8" ry="6" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"/>
+                    <rect x="-6" y="-1" width="4" height="2" fill="#333"/>
+                    <rect x="-2" y="-1" width="4" height="2" fill="#333"/>
+                    <rect x="2" y="-1" width="4" height="2" fill="#333"/>
+                    <ellipse cx="0" cy="-5" rx="10" ry="5" fill="#E0E0E0" opacity="0.5"/>
+                    <ellipse cx="0" cy="5" rx="10" ry="5" fill="#E0E0E0" opacity="0.5"/>
+                </g>
+                
+                <!-- 落花 -->
+                <circle cx="120" cy="250" r="3" fill="#FF8FAB" opacity="0.6"/>
+                <circle cx="380" cy="270" r="2.5" fill="#C71585" opacity="0.5"/>
+                <circle cx="200" cy="290" r="2" fill="#FF8FAB" opacity="0.4"/>
+            </svg>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2><span class="icon">📜</span>诗词赏读</h2>
+                <div class="poem">
+                    <p>晓迎秋露一枝新，不占园中最上春。</p>
+                    <p>桃李无言又何在，向风偏笑艳阳人。</p>
+                    <div class="author">—— 唐·杜牧《紫薇花》</div>
+                </div>
+                <p>杜牧这首诗将紫薇花的淡泊从容描绘得淋漓尽致。当桃李早已凋零，紫薇却在秋露中绽放新花，不争春色却自有风骨。诗人以"向风偏笑"四字，赋予紫薇以人格化的傲然神态，寄托了对不随流俗、独立自守品格的赞美。</p>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">📋</span>植物档案</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="label">中文名称</div>
+                        <div class="value">紫薇</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">学名</div>
+                        <div class="value">Lagerstroemia indica L.</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">科属分类</div>
+                        <div class="value">千屈菜科 紫薇属</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">别名</div>
+                        <div class="value">百日红、痒痒树、无皮树、满堂红</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">植物类型</div>
+                        <div class="value">落叶灌木或小乔木</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">原产地</div>
+                        <div class="value">中国（长江流域及以南）</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">引入世界</div>
+                        <div class="value">18世纪传入欧洲</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">用途价值</div>
+                        <div class="value">园林观赏、药用、木材</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">🌳</span>形态特征</h2>
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="icon">🌲</span>
+                        <span><strong>树形</strong>：落叶灌木或小乔木，高3-7米</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">🍃</span>
+                        <span><strong>叶片</strong>：椭圆形，对生或近对生，长3-7厘米</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">🌸</span>
+                        <span><strong>花朵</strong>：花瓣皱缩如绉纱，径约3-4厘米</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">🌿</span>
+                        <span><strong>树皮</strong>：光滑如去皮，灰褐色，可挠痒</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">🌺</span>
+                        <span><strong>花序</strong>：顶生圆锥花序，花簇密集</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">🌱</span>
+                        <span><strong>果实</strong>：蒴果，球形，成熟开裂</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">🗺️</span>地理分布与习性</h2>
+                <p><strong>原产地</strong>：中国长江流域及以南地区，是中国传统名花之一。</p>
+                <p><strong>中国分布</strong>：广泛栽培于全国各地，以江苏、浙江、安徽、湖北、四川、广东等地最为常见。嘉兴南湖、杭州西湖、南京玄武湖均有大量紫薇种植。</p>
+                <p><strong>生长习性</strong>：喜温暖湿润气候，喜光，稍耐阴。耐旱、耐寒（-10℃），耐瘠薄。适宜生长温度为15-30℃。喜肥沃疏松、排水良好的微酸性至中性土壤。</p>
+                <p><strong>栽培要点</strong>：春季修剪整形，夏季保持水分，秋季施基肥。紫薇花后及时修剪可促二次开花。</p>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">📅</span>花期时间轴</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="month">1-3月</div>
+                        <div class="description">休眠期，叶片落尽</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="month">4月</div>
+                        <div class="description">新芽萌发，叶片舒展</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="month">5月</div>
+                        <div class="description">花蕾形成，准备绽放</div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="month">6-9月（盛花期）</div>
+                        <div class="description">百日红正名，7-8月为最佳观赏期</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="month">10-11月</div>
+                        <div class="description">花期尾声，果实成熟</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="month">12月</div>
+                        <div class="description">落叶，进入休眠</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section memory-tip">
+                <h2><span class="icon">💡</span>记忆口诀</h2>
+                <div class="tip-content">
+                    <p>紫薇千屈菜科，百日红名不虚传；</p>
+                    <p>树皮光滑痒痒树，皱缩花瓣似绉纱；</p>
+                    <p>六月盛夏正当时，百日不败花中仙。</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">🔍</span>野外识别要点</h2>
+                <div class="identification">
+                    <div class="title">如何在野外识别紫薇？</div>
+                    <ul>
+                        <li><strong>看树皮</strong>：树干光滑如去皮，灰褐色，用手挠会"怕痒"整树摇动</li>
+                        <li><strong>观花瓣</strong>：花瓣边缘皱缩如绉纱，这是紫薇最独特的特征</li>
+                        <li><strong>辨花序</strong>：顶生圆锥花序，花簇密集，远看如彩云</li>
+                        <li><strong>查叶序</strong>：叶片椭圆形，对生或近对生，全缘</li>
+                        <li><strong>看花色</strong>：常见粉红、紫红、白色，同株可有多种花色</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">🌿</span>近亲植物</h2>
+                <div class="relatives">
+                    <div class="relative-item">
+                        <div class="name">大花紫薇</div>
+                        <div class="latin">Lagerstroemia speciosa</div>
+                    </div>
+                    <div class="relative-item">
+                        <div class="name">尾叶紫薇</div>
+                        <div class="latin">Lagerstroemia caudata</div>
+                    </div>
+                    <div class="relative-item">
+                        <div class="name">川黔紫薇</div>
+                        <div class="latin">Lagerstroemia excelsa</div>
+                    </div>
+                    <div class="relative-item">
+                        <div class="name">南紫薇</div>
+                        <div class="latin">Lagerstroemia subcostata</div>
+                    </div>
+                    <div class="relative-item">
+                        <div class="name">毛紫薇</div>
+                        <div class="latin">Lagerstroemia tomentosa</div>
+                    </div>
+                    <div class="relative-item">
+                        <div class="name">圆锥紫薇</div>
+                        <div class="latin">Lagerstroemia paniculata</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><span class="icon">✨</span>文化意义与趣闻</h2>
+                <p><strong>百日红由来</strong>：紫薇花期长达百日（6-9月），故得名"百日红"，是夏秋最持久的观赏花木。</p>
+                <p><strong>痒痒树之谜</strong>：紫薇树干光滑无树皮，轻挠树干上部，全树会抖动，故名"痒痒树"。这是因为树干传导振动的效率极高。</p>
+                <p><strong>紫薇星座</strong>：古人认为紫薇花与紫微星（北极星）相应，是帝王之花。唐代中书省曾名"紫薇省"。</p>
+                <p><strong>杜牧与紫薇</strong>：唐代诗人杜牧曾任中书舍人，写过多首紫薇花诗，人称"杜紫薇"。</p>
+                <p><strong>市花地位</strong>：紫薇是徐州市、襄阳市、咸阳市的市花，象征长寿与繁荣。</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>每日花卉推荐 | 让生活充满花香</p>
+            <p>数据来源：植物志、园林数据库 | 生成时间：2026年6月10日</p>
+        </div>
+    </div>
+</body>
+</html>

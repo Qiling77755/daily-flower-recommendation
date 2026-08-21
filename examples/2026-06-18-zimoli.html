@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紫茉莉 - 每日花卉推荐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #2c2c2a;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #cecbf6 0%, #534ab7 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .header .scientific-name {
+            font-size: 16px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .illustration {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .illustration svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #534ab7;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #cecbf6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #534ab7;
+        }
+        
+        .info-item .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-item .value {
+            font-size: 15px;
+            color: #2c2c2a;
+        }
+        
+        .mnemonic {
+            background-color: #e1f5ee;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1d9e75;
+            margin-bottom: 30px;
+        }
+        
+        .mnemonic h3 {
+            font-size: 16px;
+            color: #0f6e56;
+            margin-bottom: 10px;
+        }
+        
+        .mnemonic .poem {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #04342c;
+            font-weight: 500;
+        }
+        
+        .relatives {
+            margin-bottom: 30px;
+        }
+        
+        .relative-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .relative-item {
+            background-color: #e6f1fb;
+            color: #185fa5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .poetry {
+            background-color: #faeeda;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #ba7517;
+        }
+        
+        .poetry h3 {
+            font-size: 16px;
+            color: #854f0b;
+            margin-bottom: 15px;
+        }
+        
+        .poem-content {
+            font-size: 16px;
+            line-height: 2;
+            color: #633806;
+            margin-bottom: 15px;
+        }
+        
+        .poem-author {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+        }
+        
+        .poem-analysis {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.8;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ef9f27;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>紫茉莉</h1>
+            <div class="scientific-name">Mirabilis jalapa</div>
+        </div>
+        
+        <div class="content">
+            <div class="illustration">
+                <svg viewBox="0 0 680 500" width="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5"
+                          markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </marker>
+                    </defs>
+                    
+                    <!-- 背景 - 傍晚天空 -->
+                    <rect width="680" height="500" fill="#e6f1fb"/>
+                    <rect width="680" height="300" fill="#b5d4f4" opacity="0.3"/>
+                    
+                    <!-- 地面 -->
+                    <path d="M0 400 Q170 380 340 390 Q510 400 680 380 L680 500 L0 500 Z" fill="#eaf3de"/>
+                    <path d="M0 410 Q170 390 340 400 Q510 410 680 390 L680 500 L0 500 Z" fill="#c0dd97"/>
+                    
+                    <!-- 紫茉莉植株 -->
+                    <g transform="translate(340, 200)">
+                        <!-- 主茎 -->
+                        <path d="M0 200 Q-10 150 -5 100 Q0 50 5 0" fill="none" stroke="#3b6d11" stroke-width="4"/>
+                        
+                        <!-- 分枝 -->
+                        <path d="M-5 100 Q-40 80 -80 90" fill="none" stroke="#3b6d11" stroke-width="3"/>
+                        <path d="M5 80 Q40 60 80 70" fill="none" stroke="#3b6d11" stroke-width="3"/>
+                        <path d="M-5 60 Q-30 40 -60 50" fill="none" stroke="#3b6d11" stroke-width="2"/>
+                        <path d="M5 40 Q30 20 60 30" fill="none" stroke="#3b6d11" stroke-width="2"/>
+                        
+                        <!-- 叶片 -->
+                        <ellipse cx="-70" cy="85" rx="25" ry="12" fill="#639922" transform="rotate(-20, -70, 85)"/>
+                        <ellipse cx="70" cy="65" rx="25" ry="12" fill="#639922" transform="rotate(20, 70, 65)"/>
+                        <ellipse cx="-50" cy="45" rx="20" ry="10" fill="#639922" transform="rotate(-15, -50, 45)"/>
+                        <ellipse cx="50" cy="25" rx="20" ry="10" fill="#639922" transform="rotate(15, 50, 25)"/>
+                        
+                        <!-- 紫红色花朵 -->
+                        <g transform="translate(-80, 90)">
+                            <path d="M0 0 Q-15 -20 -5 -35 Q5 -50 15 -35 Q25 -20 10 0 Z" fill="#d4537e"/>
+                            <path d="M0 0 Q-20 -10 -15 -30 Q-10 -50 0 -35 Q10 -50 15 -30 Q20 -10 10 0 Z" fill="#993556" opacity="0.7"/>
+                            <circle cx="5" cy="-15" r="3" fill="#faeeda"/>
+                        </g>
+                        
+                        <!-- 粉红色花朵 -->
+                        <g transform="translate(80, 70)">
+                            <path d="M0 0 Q-15 -20 -5 -35 Q5 -50 15 -35 Q25 -20 10 0 Z" fill="#ed93b1"/>
+                            <path d="M0 0 Q-20 -10 -15 -30 Q-10 -50 0 -35 Q10 -50 15 -30 Q20 -10 10 0 Z" fill="#d4537e" opacity="0.7"/>
+                            <circle cx="5" cy="-15" r="3" fill="#faeeda"/>
+                        </g>
+                        
+                        <!-- 黄色花朵 -->
+                        <g transform="translate(-60, 50)">
+                            <path d="M0 0 Q-12 -16 -4 -28 Q4 -40 12 -28 Q20 -16 8 0 Z" fill="#ef9f27"/>
+                            <path d="M0 0 Q-16 -8 -12 -24 Q-8 -40 0 -28 Q8 -40 12 -24 Q16 -8 8 0 Z" fill="#ba7517" opacity="0.7"/>
+                            <circle cx="4" cy="-12" r="2" fill="#faeeda"/>
+                        </g>
+                        
+                        <!-- 白色花朵 -->
+                        <g transform="translate(60, 30)">
+                            <path d="M0 0 Q-12 -16 -4 -28 Q4 -40 12 -28 Q20 -16 8 0 Z" fill="#f1efe8"/>
+                            <path d="M0 0 Q-16 -8 -12 -24 Q-8 -40 0 -28 Q8 -40 12 -24 Q16 -8 8 0 Z" fill="#d3d1c7" opacity="0.7"/>
+                            <circle cx="4" cy="-12" r="2" fill="#ef9f27"/>
+                        </g>
+                        
+                        <!-- 花苞 -->
+                        <ellipse cx="-30" cy="70" rx="6" ry="10" fill="#639922"/>
+                        <ellipse cx="30" cy="50" rx="6" ry="10" fill="#639922"/>
+                    </g>
+                    
+                    <!-- 标注 -->
+                    <text x="340" y="450" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="500" fill="#3c3489">紫茉莉（Mirabilis jalapa）</text>
+                    <text x="340" y="470" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5f5e5a">傍晚开花，清晨闭合 · 又名晚饭花</text>
+                </svg>
+            </div>
+            
+            <div class="info-section">
+                <h2 class="section-title">基本信息</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="label">学名</div>
+                        <div class="value">Mirabilis jalapa</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">科属</div>
+                        <div class="value">紫茉莉科 紫茉莉属</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">类型</div>
+                        <div class="value">多年生草本植物</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">花期</div>
+                        <div class="value">6-10月</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">花色</div>
+                        <div class="value">紫红、粉红、黄、白等</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">高度</div>
+                        <div class="value">50-100厘米</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2 class="section-title">形态特征</h2>
+                <p style="margin-bottom: 15px; line-height: 1.8;">
+                    紫茉莉茎直立，多分枝，高50-100厘米。叶片卵形或卵状三角形，对生。花单生或数朵簇生，有紫红、粉红、黄、白等色，花冠漏斗状，傍晚开放，次日早晨闭合，故有"晚饭花"之称。果实黑色，卵形，表面有皱纹，形似小地雷，故又名"地雷花"。根粗壮，圆锥形，肉质。
+                </p>
+            </div>
+            
+            <div class="info-section">
+                <h2 class="section-title">分布与习性</h2>
+                <p style="margin-bottom: 15px; line-height: 1.8;">
+                    原产热带美洲，现广布世界热带及温带地区。中国各地均有栽培，常见于庭院、路旁、墙角等处。喜温暖湿润环境，耐半阴，适应性强。耐旱，不耐寒，冬季地上部分枯死，地下根可越冬，次年春季重新萌发。对土壤要求不严，但以疏松肥沃的土壤为佳。
+                </p>
+            </div>
+            
+            <div class="mnemonic">
+                <h3>记忆口诀</h3>
+                <div class="poem">
+                    紫茉莉花傍晚开，五彩喇叭挂枝来。<br>
+                    清晨闭合似含羞，地雷种子传后代。
+                </div>
+            </div>
+            
+            <div class="relatives">
+                <h2 class="section-title">近亲植物</h2>
+                <div class="relative-list">
+                    <span class="relative-item">紫茉莉</span>
+                    <span class="relative-item">黄花紫茉莉</span>
+                    <span class="relative-item">多花紫茉莉</span>
+                    <span class="relative-item">秘鲁紫茉莉</span>
+                    <span class="relative-item">智利紫茉莉</span>
+                    <span class="relative-item">巴西紫茉莉</span>
+                </div>
+            </div>
+            
+            <div class="poetry">
+                <h3>诗词赏析</h3>
+                <div class="poem-content">
+                    日暮时分香满院，五彩喇叭挂枝间。<br>
+                    晨曦未到花先闭，留得清芬在人间。
+                </div>
+                <div class="poem-author">—— 现代创作《紫茉莉》</div>
+                <div class="poem-analysis">
+                    这首现代诗生动描绘了紫茉莉的开花特性。前两句写傍晚时分，紫茉莉花朵盛开，散发清香，花形如喇叭般挂满枝头；后两句写它清晨闭合的习性，虽然花期短暂，却将清芬留在人间。诗歌通过"日暮"与"晨曦"的时间对比，突出了紫茉莉"朝开暮闭"的独特习性，表达了对这种平凡而独特花卉的喜爱之情。
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>每日花卉推荐 · 第37期 · 2026年6月18日</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #999;">愿你如紫茉莉般，在平凡中保持独特</p>
+        </div>
+    </div>
+</body>
+</html>
