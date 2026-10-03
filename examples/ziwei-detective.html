@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日一花 · 辨花案卷 —— 一桩植物悬案</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  每日一花 · 创意模板 C 「辨花」植物悬案
+  ───────────────────────────────────────────────────────────────
+  核心概念：不先揭晓花名。读者是见习植物侦探：
+  先留初判，再逐件取证，在嫌疑人名下逐一审讯比对三名真实近亲——不能排除的会被告知为什么，能排除的盖下排除章。
+  三名嫌疑人均被排除后结案，揭晓真身并解锁完整档案与推理链回放。
+  排除逻辑全部来自真实植物学特征（叶长、叶尖、花瓣大小与皱褶、
+  花色），"存疑"格教人识别哪些特征不具区分力。
+
+  数据契约：档案内容渲染自 FLOWER（映射 SKILL.md 十二模块）；
+  EVIDENCE（证物）/ SUSPECTS（嫌疑人）/ MATRIX（比对结论）为
+  本模板特有数据，复用时一并替换。证物插图 SVG 内嵌于 EVIDENCE.svg。
+  结案判定：MATRIX 中每名嫌疑人至少有一格 verdict="排除"。
+
+  运行方式：双击本文件直接在浏览器打开（file://，无任何外部依赖）。
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --kraft:#c3ae83;--kraft-2:#b49d6f;--kraft-3:#a38c5e;
+    --paper:#f3ecd8;--paper-2:#ece2c8;
+    --ink:#2e2a20;--ink-soft:#5d5642;--ink-faint:#8f8570;
+    --rule:#a99a72;--rule-soft:#c2b48c;
+    --seal:#a23524;--seal-deep:#7e2416;
+    --crimson:#8d4a6b;
+    --kai:"Kaiti SC","STKaiti","KaiTi","DFKai-SB",serif;
+    --song:"Songti SC","STSong","NSimSun","SimSun","Noto Serif SC",serif;
+    --fang:"FangSong","STFangsong","FangSong_GB2312","SimSun",serif;
+    --latin:Georgia,"Times New Roman",serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--song);color:var(--ink);line-height:1.9;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .30 0 0 0 0 .16 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(178deg,var(--kraft) 0%,var(--kraft-2) 60%,var(--kraft-3) 100%);
+    min-height:100vh;padding:44px 16px 90px;
+  }
+  ::selection{background:rgba(162,53,36,.25)}
+  .wrap{max-width:1060px;margin:0 auto}
+
+  /* ── 封面 ─────────────────────────────── */
+  .cover{
+    max-width:660px;margin:4vh auto;background:var(--paper);
+    border:1px solid #8f7d52;box-shadow:0 26px 70px rgba(40,28,8,.45);
+    padding:54px 56px 46px;position:relative;
+    transition:transform .7s cubic-bezier(.6,0,.2,1),opacity .6s;
+  }
+  .cover.gone{transform:translateY(-40px) rotate(-1.2deg);opacity:0;pointer-events:none;position:absolute;top:0;left:0;right:0;z-index:-1}
+  .cover::before{content:"";position:absolute;inset:10px;border:1px solid var(--rule);pointer-events:none}
+  .cv-tag{
+    display:inline-block;background:var(--seal);color:#f6efdc;
+    font-family:var(--kai);font-size:13px;letter-spacing:.4em;text-indent:.4em;
+    padding:4px 14px;transform:rotate(-2deg);
+  }
+  .cv-no{font-family:var(--latin);font-size:13px;color:var(--ink-faint);letter-spacing:.3em;margin-top:16px}
+  .cv-case{font-family:var(--kai);font-size:clamp(30px,5.4vw,44px);letter-spacing:.12em;margin-top:10px;line-height:1.5}
+  .cv-brief{
+    font-family:var(--fang);font-size:14.5px;color:var(--ink-soft);margin-top:18px;
+    border-top:1px dashed var(--rule);border-bottom:1px dashed var(--rule);padding:14px 2px;
+  }
+  .cv-guess{margin-top:22px}
+  .cv-guess label{font-family:var(--kai);font-size:13.5px;letter-spacing:.2em;color:var(--ink-soft);display:block;margin-bottom:8px}
+  .cv-guess input{
+    width:100%;font-family:var(--fang);font-size:15px;color:var(--ink);
+    background:rgba(255,252,240,.7);border:1px solid var(--rule);
+    padding:10px 14px;letter-spacing:.05em;outline:none;
+  }
+  .cv-guess input:focus{border-color:var(--crimson)}
+  .cv-guess .hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;letter-spacing:.08em}
+  .cv-open{
+    margin-top:26px;width:100%;font-family:var(--kai);font-size:16px;
+    letter-spacing:.5em;text-indent:.5em;color:#f6efdc;background:var(--seal);
+    border:none;padding:13px 0;cursor:pointer;transition:.25s;
+  }
+  .cv-open:hover{background:var(--seal-deep)}
+
+  /* ── 卷宗主体 ─────────────────────────── */
+  .case{display:none}
+  .case.on{display:block}
+  .case-head{
+    background:var(--paper);border:1px solid #8f7d52;
+    box-shadow:0 14px 40px rgba(40,28,8,.35);
+    padding:20px 28px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;
+  }
+  .case-head .ch-no{font-family:var(--latin);font-size:12px;color:var(--ink-faint);letter-spacing:.25em}
+  .case-head .ch-case{font-family:var(--kai);font-size:19px;letter-spacing:.15em}
+  .case-head .ch-status{font-family:var(--kai);font-size:13px;color:var(--seal);letter-spacing:.2em}
+
+  .board{
+    margin-top:22px;display:grid;grid-template-columns:5fr 7fr;gap:22px;align-items:start;
+  }
+
+  /* 证物袋 */
+  .col-tt{font-family:var(--kai);font-size:14px;letter-spacing:.35em;color:#4b3c1e;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .col-tt::after{content:"";flex:1;height:1px;background:rgba(75,60,30,.35)}
+  .evidence-list{display:flex;flex-direction:column;gap:12px}
+  .evi{
+    position:relative;text-align:left;background:var(--paper);
+    border:1px solid #8f7d52;padding:14px 16px;cursor:pointer;
+    font-family:var(--song);transition:.25s;box-shadow:0 3px 10px rgba(40,28,8,.18);
+  }
+  .evi:hover{transform:translateY(-2px)}
+  .evi::after{ /* 胶带贴角 */
+    content:"";position:absolute;top:-7px;right:22px;width:44px;height:15px;
+    background:rgba(240,230,200,.55);border:1px solid rgba(150,130,90,.3);transform:rotate(3deg);
+  }
+  .evi .ev-no{font-family:var(--latin);font-size:10.5px;color:var(--ink-faint);letter-spacing:.2em}
+  .evi .ev-name{font-family:var(--kai);font-size:15.5px;letter-spacing:.2em;margin-top:2px}
+  .evi .ev-status{font-size:11px;color:var(--ink-faint);letter-spacing:.15em;margin-top:4px}
+  .evi.verified{cursor:default;border-color:var(--seal)}
+  .evi.verified .ev-status{color:var(--seal)}
+  .evi .ev-stamp{
+    position:absolute;right:14px;bottom:10px;font-family:var(--kai);font-size:13px;
+    color:var(--seal);border:2px solid var(--seal);border-radius:3px;
+    padding:1px 7px;letter-spacing:.2em;opacity:.9;
+    animation:stampIn .5s cubic-bezier(.2,1.4,.4,1) both;
+    transform:rotate(-8deg);
+  }
+  /* 证物展开 */
+  .evi-body{
+    background:var(--paper);border:1px solid #8f7d52;box-shadow:0 3px 10px rgba(40,28,8,.18);
+    padding:18px;margin-top:2px;display:none;
+  }
+  .evi-body.on{display:block;animation:fadeUp .45s ease both}
+  .evi-body svg{width:100%;height:auto;display:block;background:#f8f3e3;border:1px solid var(--rule-soft)}
+  .evi-note{font-family:var(--fang);font-size:13.5px;color:var(--ink-soft);margin-top:12px;text-align:justify}
+  .evi-note b{font-family:var(--kai);font-weight:400;color:var(--seal);letter-spacing:.1em}
+
+  /* 嫌疑人 */
+  .suspect-list{display:flex;flex-direction:column;gap:12px}
+  .suspect{
+    background:var(--paper);border:1px solid #8f7d52;padding:16px 18px 14px;
+    box-shadow:0 3px 10px rgba(40,28,8,.18);position:relative;transition:.3s;
+  }
+  .suspect.excluded{background:var(--paper-2);border-color:var(--seal)}
+  .suspect.excluded .su-photo{opacity:.45;filter:grayscale(.7)}
+  .su-row{display:flex;gap:14px;align-items:flex-start}
+  .su-photo{width:64px;height:64px;flex-shrink:0;background:#f8f3e3;border:1px solid var(--rule-soft)}
+  .su-photo svg{width:100%;height:100%}
+  .su-name{font-family:var(--kai);font-size:17px;letter-spacing:.15em}
+  .su-latin{font-family:var(--latin);font-style:italic;font-size:11.5px;color:var(--ink-faint)}
+  .su-traits{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+  .su-traits span{display:inline-block;border:1px solid var(--rule-soft);background:rgba(255,252,240,.6);padding:0 8px;margin:2px 4px 2px 0;font-size:11.5px}
+  /* 审讯记录：逐证物比对 */
+  .su-interro{margin-top:12px;border-top:1px dashed var(--rule-soft);padding-top:10px}
+  .su-interro .si-tt{font-family:var(--kai);font-size:11.5px;letter-spacing:.3em;color:var(--ink-faint);margin-bottom:6px}
+  .su-evs{display:flex;flex-wrap:wrap;gap:6px}
+  .su-ev{
+    font-family:var(--kai);font-size:12px;letter-spacing:.08em;
+    border:1px solid var(--rule-soft);background:rgba(255,252,240,.6);
+    color:var(--ink-faint);padding:3px 9px;border-radius:2px;
+  }
+  button.su-ev{cursor:pointer;transition:.2s}
+  button.su-ev:hover{border-color:var(--seal);color:var(--seal)}
+  .su-ev.st-cmp{color:var(--ink-soft)}
+  .su-ev.st-ready{color:#f6efdc;background:var(--seal);border-color:var(--seal)}
+  .su-ev.st-hold{color:var(--ink-soft);border-style:dashed}
+  .su-ev.st-cut{color:var(--seal);border-color:var(--seal);font-weight:700}
+  .su-ev.st-locked{background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(150,135,95,.08) 5px 10px)}
+  /* 卡内比对详情 */
+  .su-cmp{margin-top:12px;border:1px dashed var(--rule);background:rgba(255,252,240,.55);padding:12px 14px;display:none}
+  .su-cmp.on{display:block;animation:fadeUp .35s ease both}
+  .su-excl{
+    position:absolute;top:10px;right:14px;font-family:var(--kai);font-size:15px;
+    color:var(--seal);border:2.5px solid var(--seal);border-radius:3px;padding:2px 10px;
+    letter-spacing:.25em;transform:rotate(-10deg) scale(2.4);opacity:0;
+  }
+  .suspect.excluded .su-excl{animation:stampIn .55s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes stampIn{
+    0%{transform:rotate(-10deg) scale(2.4);opacity:0}
+    62%{transform:rotate(-10deg) scale(.9);opacity:1}
+    100%{transform:rotate(-10deg) scale(1);opacity:1}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* 排除总览条 */
+  .mx-strip-wrap{
+    margin-top:22px;background:var(--paper);border:1px solid #8f7d52;
+    box-shadow:0 10px 30px rgba(40,28,8,.3);padding:16px 22px 18px;
+  }
+  .mxs-title{font-family:var(--kai);font-weight:400;font-size:15px;letter-spacing:.3em}
+  .mxs-hint{font-size:11.5px;color:var(--ink-faint);letter-spacing:.08em;margin:4px 0 12px}
+  .mx-strip{display:flex;gap:14px;flex-wrap:wrap}
+  .mxs-col{flex:1;min-width:180px;border:1px solid var(--rule-soft);padding:10px 12px;background:rgba(255,252,240,.5)}
+  .mxs-col .mxs-name{font-family:var(--kai);font-size:13.5px;letter-spacing:.12em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  .mxs-col.cut .mxs-name{color:var(--seal)}
+  .mxs-col.cut .mxs-mark{font-family:var(--kai);border:1.5px solid var(--seal);color:var(--seal);padding:0 5px;border-radius:2px;transform:rotate(-6deg);font-size:11px}
+  .mxs-dots{display:flex;gap:8px}
+  .mxs-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--rule-soft);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:var(--kai);color:var(--ink-faint)}
+  .mxs-dot.hold{border-color:var(--ink-faint);color:var(--ink-soft)}
+  .mxs-dot.cut{border-color:var(--seal);color:var(--seal);font-weight:700}
+  .mxs-dot.ready{border-color:var(--seal);color:var(--seal)}
+
+  /* 比对详情复用（卡内） */
+  .cmp-detail .cd-title{font-family:var(--kai);font-size:14px;letter-spacing:.2em;color:var(--ink)}
+  .cmp-detail table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  .cmp-detail td,.cmp-detail th{border-bottom:1px solid var(--rule-soft);padding:6px 8px;text-align:left;vertical-align:top}
+  .cmp-detail th{font-family:var(--kai);font-weight:400;color:var(--ink-faint);width:6em;letter-spacing:.08em;white-space:nowrap}
+  .cmp-detail .cd-verdict{margin-top:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .cd-tag{font-family:var(--kai);font-size:13px;letter-spacing:.15em;padding:2px 10px;border-radius:2px}
+  .cd-tag.cut{color:#f6efdc;background:var(--seal)}
+  .cd-tag.hold{color:var(--ink-soft);border:1px solid var(--rule)}
+  .cd-cut{
+    font-family:var(--kai);font-size:13px;letter-spacing:.2em;color:#f6efdc;
+    background:var(--seal);border:none;padding:8px 18px;cursor:pointer;
+  }
+  .cd-cut:hover{background:var(--seal-deep)}
+
+  /* 侦探笔记 */
+  .notes{
+    margin-top:22px;background:var(--paper);border:1px solid #8f7d52;
+    box-shadow:0 10px 30px rgba(40,28,8,.3);padding:18px 22px;
+  }
+  .notes h3{font-family:var(--kai);font-weight:400;font-size:15px;letter-spacing:.3em;margin-bottom:8px}
+  .notes ol{list-style:none;font-family:var(--fang);font-size:12.5px;color:var(--ink-soft)}
+  .notes li{padding:4px 0;border-bottom:1px dashed var(--rule-soft)}
+  .notes li:last-child{border-bottom:none}
+  .notes li b{font-family:var(--kai);font-weight:400;color:var(--seal);margin-right:8px}
+  .notes .empty{font-size:12px;color:var(--ink-faint)}
+
+  /* 结案按钮 */
+  .verdict-bar{
+    margin-top:22px;text-align:center;display:none;
+  }
+  .verdict-bar.on{display:block}
+  .btn-verdict{
+    font-family:var(--kai);font-size:17px;letter-spacing:.5em;text-indent:.5em;
+    color:#f6efdc;background:var(--seal);border:none;padding:14px 44px;cursor:pointer;
+    box-shadow:0 8px 24px rgba(126,36,22,.4);animation:pulse 2s infinite;
+  }
+  .btn-verdict:hover{background:var(--seal-deep);animation:none}
+  @keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(126,36,22,.4)}50%{box-shadow:0 8px 34px rgba(126,36,22,.65)}}
+
+  /* ── 结案卷宗 ─────────────────────────── */
+  .reveal{position:fixed;inset:0;background:rgba(52,42,20,.72);z-index:50;display:none;overflow-y:auto;padding:5vh 14px 8vh}
+  .reveal.on{display:block}
+  .reveal-paper{
+    max-width:860px;margin:0 auto;background:var(--paper);
+    border:1px solid #8f7d52;box-shadow:0 30px 80px rgba(0,0,0,.5);
+    padding:52px 58px 60px;position:relative;animation:fadeUp .6s ease both;
+  }
+  .reveal-paper::before{content:"";position:absolute;inset:10px;border:1px solid var(--rule);pointer-events:none}
+  .rv-seal{
+    position:absolute;top:34px;right:40px;font-family:var(--kai);font-size:22px;
+    color:var(--seal);border:3px solid var(--seal);border-radius:4px;padding:6px 14px;
+    letter-spacing:.3em;transform:rotate(-9deg);opacity:.95;
+    animation:stampIn .7s cubic-bezier(.2,1.4,.4,1) .3s both;
+  }
+  .rv-verdict{font-family:var(--kai);font-size:13px;letter-spacing:.5em;color:var(--ink-faint)}
+  .rv-truth{display:flex;align-items:baseline;gap:18px;margin-top:12px;flex-wrap:wrap}
+  .rv-truth .t-name{font-family:var(--kai);font-size:64px;letter-spacing:.2em;color:var(--ink);line-height:1.2}
+  .rv-truth .t-latin{font-family:var(--latin);font-style:italic;font-size:16px;color:var(--ink-soft)}
+  .rv-truth .t-alias{font-size:13px;color:var(--crimson);letter-spacing:.15em}
+  .rv-judge{
+    margin-top:18px;border-top:1px dashed var(--rule);border-bottom:1px dashed var(--rule);
+    padding:12px 2px;font-family:var(--fang);font-size:13.5px;color:var(--ink-soft);
+  }
+  .rv-judge b{font-family:var(--kai);font-weight:400;color:var(--seal);letter-spacing:.1em}
+
+  .rv-poem{
+    margin-top:26px;display:flex;gap:30px;justify-content:center;padding:18px 0;
+    background:rgba(255,252,240,.55);border:1px solid var(--rule-soft);
+  }
+  .rv-poem .p{font-family:var(--kai);text-align:center}
+  .rv-poem .pl{font-size:14.5px;letter-spacing:.18em;line-height:2.2}
+  .rv-poem .pa{font-size:11px;color:var(--ink-faint);margin-top:4px;letter-spacing:.15em}
+
+  .rv-sec{margin-top:38px}
+  .rv-sec h3{
+    font-family:var(--kai);font-weight:400;font-size:17px;letter-spacing:.3em;
+    display:flex;align-items:baseline;gap:12px;margin-bottom:12px;
+  }
+  .rv-sec h3 .sn{font-size:11px;color:var(--seal);border:1px solid rgba(162,53,36,.4);padding:1px 7px;letter-spacing:.15em;white-space:nowrap;transform:translateY(-2px)}
+  .rv-sec h3::after{content:"";flex:1;height:1px;background:var(--rule-soft)}
+
+  table.rv-arch{width:100%;border-collapse:collapse;font-size:13.5px;border-top:2px solid var(--ink-soft);border-bottom:2px solid var(--ink-soft)}
+  table.rv-arch th{font-family:var(--kai);font-weight:400;text-align:left;width:6.5em;padding:8px 12px 8px 2px;color:var(--seal);letter-spacing:.3em;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  table.rv-arch td{padding:8px 2px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  table.rv-arch tr:last-child th,table.rv-arch tr:last-child td{border-bottom:none}
+  table.rv-arch i{font-family:var(--latin)}
+
+  .rv-twocol{columns:2;column-gap:44px;column-rule:1px solid var(--rule-soft);font-size:13.5px}
+  .rv-twocol p{break-inside:avoid;margin-bottom:10px;text-align:justify}
+  .rv-twocol b{font-family:var(--kai);font-weight:400;color:var(--crimson);letter-spacing:.1em}
+
+  table.rv-cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.rv-cmp th{font-family:var(--kai);font-weight:400;background:var(--ink-soft);color:var(--paper);padding:7px 10px;text-align:left;letter-spacing:.15em}
+  table.rv-cmp td{padding:7px 10px;border:1px solid var(--rule-soft);vertical-align:top;color:var(--ink-soft)}
+  table.rv-cmp td:first-child{font-family:var(--kai);color:var(--ink);white-space:nowrap}
+  table.rv-cmp i{font-family:var(--latin)}
+
+  .rv-mnem{font-family:var(--kai);font-size:16px;letter-spacing:.2em;line-height:2.5;color:var(--seal);text-align:center;padding:18px 0 14px;border-top:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft)}
+
+  .rv-replay{list-style:none;font-family:var(--fang);font-size:13px;color:var(--ink-soft)}
+  .rv-replay li{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--rule-soft);align-items:baseline}
+  .rv-replay li:last-child{border-bottom:none}
+  .rv-replay li b{font-family:var(--kai);font-weight:400;color:var(--seal);white-space:nowrap}
+
+  .rv-foot{margin-top:44px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .rv-foot .src{font-size:11px;color:var(--ink-faint);letter-spacing:.15em}
+  .btn-again{
+    font-family:var(--kai);font-size:13.5px;letter-spacing:.3em;text-indent:.3em;
+    background:none;border:1px solid var(--seal);color:var(--seal);
+    padding:9px 22px;cursor:pointer;transition:.25s;
+  }
+  .btn-again:hover{background:var(--seal);color:#f6efdc}
+
+  /* ── 窄屏 ─────────────────────────────── */
+  @media (max-width:860px){
+    body{padding:24px 10px 70px}
+    .cover{padding:40px 26px 34px;margin:2vh auto}
+    .board{grid-template-columns:1fr}
+    .reveal-paper{padding:38px 24px 44px}
+    .rv-truth .t-name{font-size:46px}
+    .rv-twocol{columns:1}
+    .rv-poem{flex-direction:column;gap:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ═══ 封面 ═══ -->
+  <section class="cover" id="cover">
+    <span class="cv-tag">案</span>
+    <div class="cv-no">CASE No. 0610 · 植物悬案</div>
+    <h1 class="cv-case">一种开百日红花的树</h1>
+    <p class="cv-brief">
+      案情提要：某园有树一株——花绯紫成云，瓣皱如绉纱；树皮光滑如去皮，轻挠则枝叶俱颤；自六月开至九月，约莫百日不歇。<br>
+      今有同属近亲三名（树）在案，皆有嫌疑。请据证物逐一排除之。
+    </p>
+    <div class="cv-guess">
+      <label for="guessInput">你的初判（凭直觉写一种花名，也可留空）</label>
+      <input id="guessInput" type="text" maxlength="12" placeholder="它是不是……你先说说看" autocomplete="off">
+      <div class="hint">初判将封存，结案时拆验。先取证，再修正你的直觉。</div>
+    </div>
+    <button class="cv-open" id="btnOpen">开 卷 查 验</button>
+  </section>
+
+  <!-- ═══ 卷宗主体 ═══ -->
+  <main class="case" id="case">
+    <div class="case-head">
+      <span class="ch-no">CASE No. 0610</span>
+      <span class="ch-case">案由 · 一种开百日红花的树</span>
+      <span class="ch-status" id="caseStatus">查验中</span>
+    </div>
+
+    <div class="board">
+      <div>
+        <div class="col-tt">证物五件</div>
+        <div class="evidence-list" id="evidenceList"></div>
+      </div>
+      <div>
+        <div class="col-tt">嫌疑人三名（同属近亲）</div>
+        <div class="suspect-list" id="suspectList"></div>
+      </div>
+    </div>
+
+    <div class="mx-strip-wrap">
+      <div class="mxs-title">排除总览</div>
+      <div class="mxs-hint">取证之后，到右侧嫌疑人名下逐一审讯比对；凡不能排除者，会告诉你为什么——这也是学问。</div>
+      <div class="mx-strip" id="mxStrip"></div>
+    </div>
+
+    <div class="notes">
+      <h3>侦探笔记</h3>
+      <ol id="notesList"><li class="empty">尚未落笔。</li></ol>
+    </div>
+
+    <div class="verdict-bar" id="verdictBar">
+      <button class="btn-verdict" id="btnVerdict">呈 请 结 案</button>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ 结案卷宗 ═══ -->
+<div class="reveal" id="reveal">
+  <div class="reveal-paper">
+    <div class="rv-seal">结案</div>
+    <div class="rv-verdict">呈请结案 · 准</div>
+    <div class="rv-truth">
+      <span class="t-name">紫 薇</span>
+      <span class="t-latin" id="rvLatin"></span>
+      <span class="t-alias" id="rvAlias"></span>
+    </div>
+    <div class="rv-judge" id="rvJudge"></div>
+    <div class="rv-poem" id="rvPoem"></div>
+
+    <section class="rv-sec"><h3><span class="sn">其一</span>案犯档案</h3><table class="rv-arch" id="rvArch"></table></section>
+    <section class="rv-sec"><h3><span class="sn">其二</span>形态供述</h3><div class="rv-twocol" id="rvMorph"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其三</span>行踪（地理分布与习性）</h3><div class="rv-twocol" id="rvDist"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其四</span>家族关系（近亲植物）</h3><table class="rv-cmp" id="rvCmp"></table></section>
+    <section class="rv-sec"><h3><span class="sn">其五</span>认人要点（野外识别）</h3><div class="rv-twocol" id="rvRecog"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其六</span>通缉口诀</h3><div class="rv-mnem" id="rvMnem"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其七</span>社会关系（文化趣闻）</h3><div class="rv-twocol" id="rvFacts"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其八</span>观察指南（本地物候）</h3><div class="rv-twocol" id="rvPheno"></div></section>
+    <section class="rv-sec"><h3><span class="sn">其九</span>推理链回放</h3><ol class="rv-replay" id="rvReplay"></ol></section>
+
+    <div class="rv-foot">
+      <span class="src">每日一花 · 辨花案卷 —— 认识一种花，先学会怀疑与求证 | 创意模板 C「辨花」</span>
+      <button class="btn-again" id="btnAgain">重 查 一 遍</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ 数据契约 ═══════════════ */
+const FLOWER = {
+  名: "紫薇", 学名: "Lagerstroemia indica L.",
+  别名: ["百日红","痒痒树","无皮树","满堂红"],
+  档案: [
+    ["学名","<i>Lagerstroemia indica</i> L."],
+    ["科属","千屈菜科 紫薇属"],
+    ["别名","百日红、痒痒树、无皮树、满堂红"],
+    ["类型","落叶灌木或小乔木，高 3–7 米"],
+    ["花期","6–9 月，盛花 7–8 月"],
+    ["原产","中国长江流域及以南"],
+    ["传播","18 世纪传入欧洲，今为世界名花"],
+    ["用途","园林观赏、药用、木材"],
+  ],
+  形态: [
+    ["树形","落叶灌木或小乔木，高可达 7 米，枝干屈曲有致。"],
+    ["树皮","灰褐色，光滑如去皮——周皮逐年整层剥落，故老干亦莹润。"],
+    ["叶","椭圆形，对生或近对生，长 3–7 厘米，全缘，先端短尖。"],
+    ["花","花径约 3–4 厘米，花瓣皱缩如绉纱，边缘作波状，有细长之爪。"],
+    ["花序","顶生圆锥花序，花簇密集，远望如缀彩云。"],
+    ["果","蒴果球状，成熟后室背开裂，种子具翅。"],
+  ],
+  分布: [
+    ["原产","中国长江流域及以南地区，为传统名花。"],
+    ["今布","全国广泛栽培，江苏、浙江、安徽、湖北、四川、广东诸省尤多。"],
+    ["习性","喜温暖湿润，喜光稍耐阴；耐旱、耐寒（−10℃）、耐瘠薄。"],
+    ["栽培","花后剪去残序，可促二次开花。"],
+  ],
+  识别: [
+    {法:"看树皮", 述:"光滑如去皮；轻挠树干，全树微颤——\"痒痒树\"。"},
+    {法:"观花瓣", 述:"边缘皱缩如绉纱，紫薇属最独特的印记。"},
+    {法:"辨花序", 述:"顶生圆锥花序，花簇密集如彩云。"},
+    {法:"查叶序", 述:"椭圆对生，全缘，先端短尖不呈长尾。"},
+    {法:"看花色", 述:"绯红、紫红、白色，同株花色恒定。"},
+  ],
+  近亲: [
+    {名:"大花紫薇", 学名:"<i>Lagerstroemia speciosa</i>", 花色:"紫红至粉紫", 区别:"叶长 10–25 厘米，花径 5–8 厘米，花瓣平展几乎不皱。"},
+    {名:"南紫薇", 学名:"<i>Lagerstroemia subcostata</i>", 花色:"白色，花小", 区别:"又名九芎；花径仅约 1–2 厘米，与紫薇皱瓣绯红迥异。"},
+    {名:"尾叶紫薇", 学名:"<i>Lagerstroemia caudata</i>", 花色:"白至淡紫", 区别:"叶先端尾状长尖（\"尾叶\"得名之由），紫薇仅短尖。"},
+  ],
+  口诀: ["紫薇千屈菜科，百日红名不虚传；","树皮光滑痒痒树，皱缩花瓣似绉纱；","六月盛夏正当时，百日不败花中仙。"],
+  趣闻: [
+    {题:"百日红", 文:"花期自夏徂秋长达百日，故名\"百日红\"，是夏秋最持久的观赏花木。"},
+    {题:"痒痒树之谜", 文:"轻挠树干上部，全树微颤如怕痒——一般认为是其木质致密、树冠重心高，振动传导效率极高所致。"},
+    {题:"紫微星象", 文:"古人以紫微星为帝星，紫薇与之同名相应；唐代中书省一度改称\"紫微省\"，省中遍植紫薇。"},
+    {题:"杜紫薇", 文:"杜牧官中书舍人、咏紫薇诗佳，人称\"杜紫薇\"——诗人与花互为别名。"},
+    {题:"市花", 文:"徐州、襄阳、咸阳等市以其为市花，寓长寿与繁荣。"},
+    {题:"入药", 文:"皮、叶、根皆可入药，民间用于清热解毒、活血止血（须遵医嘱）。"},
+  ],
+  物候: {
+    地:"长江流域（以武汉为例）",
+    观:"六月初始花，七月大盛，至国庆前后犹有残花。庭前、街角、公园水畔皆可遇。",
+    提:["最佳观赏：7 月中旬 – 8 月下旬，清晨带露时花色最鲜。",
+        "体验\"痒痒树\"：择光滑老干以指节轻挠，静观枝叶微颤。",
+        "拾果：10 月后蒴果开裂，可拾作标本。"],
+  },
+  诗词: [
+    {题:"紫薇花",代:"唐",人:"杜牧",句:["晓迎秋露一枝新，","不占园中最上春。","桃李无言又何在，","向风偏笑艳阳人。"]},
+    {题:"紫薇花",代:"唐",人:"白居易",句:["丝纶阁下文书静，","钟鼓楼中刻漏长。","独坐黄昏谁是伴，","紫薇花对紫微郎。"]},
+  ],
+};
+
+/* 证物：note=查验笔记；svg=证物插图（内联 SVG 字符串） */
+const EVIDENCE = [
+  { no:"物证壹", name:"树皮标本", short:"树皮",
+    note:"<b>查验所记</b>　树皮灰褐色，光滑如去皮——周皮逐年整层剥落。以指轻挠，全树微颤。",
+    svg:`<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#f8f3e3"/><defs><linearGradient id="bk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9c8663"/><stop offset=".45" stop-color="#b3a17c"/><stop offset=".6" stop-color="#a8946e"/><stop offset="1" stop-color="#8d7854"/></linearGradient></defs><path d="M96 138 C 92 108, 92 62, 98 24 C 100 14, 106 8, 112 6 L 208 6 C 214 8, 220 14, 222 24 C 228 62, 228 108, 224 138 Z" fill="url(#bk)" stroke="#6f5c3e"/><path d="M112 16 C 106 46, 104 90, 108 130" stroke="#c4b48c" stroke-width="1.4" fill="none" opacity=".65"/><path d="M206 16 C 212 46, 214 90, 210 130" stroke="#c4b48c" stroke-width="1.4" fill="none" opacity=".65"/><text x="252" y="76" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="11" fill="#8f8570" text-anchor="middle">光滑如去皮</text><line x1="226" y1="70" x2="240" y2="72" stroke="#8f8570" stroke-width=".8"/><text x="70" y="142" font-family="Georgia,serif" font-size="9" font-style="italic" fill="#8f8570">bark specimen</text></svg>` },
+  { no:"物证贰", name:"叶片标本", short:"叶片",
+    note:"<b>查验所记</b>　椭圆，对生；长 3–7 厘米，全缘，先端短尖，无长尾。",
+    svg:`<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#f8f3e3"/><defs><path id="lfC" d="M0 0 C 7 -13, 24 -20, 37 -15 C 44 -12, 43 -3, 33 2 C 19 9, 5 6, 0 0 Z"/></defs><use href="#lfC" transform="translate(70 96) rotate(-18) scale(1.7)" fill="#5b7246" stroke="#41552f"/><use href="#lfC" transform="translate(70 96) rotate(12) scale(1.55) translate(14 -16)" fill="#6d8454" stroke="#41552f"/><path d="M70 96 L 128 68" stroke="#3c4f30" stroke-width="1" opacity=".6" fill="none"/><path d="M60 128 L 60 138 M60 133 L 148 133 M148 128 L 148 138" stroke="#5d5642" stroke-width="1" fill="none"/><text x="104" y="128" font-family="Georgia,serif" font-size="10" fill="#5d5642" text-anchor="middle">3–7 cm</text><text x="196" y="52" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="11" fill="#8f8570">先端短尖，不成尾</text><line x1="168" y1="56" x2="140" y2="72" stroke="#8f8570" stroke-width=".8"/><text x="252" y="142" font-family="Georgia,serif" font-size="9" font-style="italic" fill="#8f8570">leaf specimen</text></svg>` },
+  { no:"物证叁", name:"花之标本", short:"花瓣",
+    note:"<b>查验所记</b>　花径 3–4 厘米；六瓣，瓣缘皱缩如绉纱，瓣有细长之爪；色绯紫红，瓣基色深。",
+    svg:`<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#f8f3e3"/><defs><path id="ptC" d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q -3 -29.5 -1.6 -25.5 Q 0 -30.5 1.6 -25.5 Q 3 -29.5 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z"/></defs><g transform="translate(160 82) scale(1.75)"><use href="#ptC" fill="#b34a75" stroke="#7c3054" stroke-width=".4"/><use href="#ptC" transform="rotate(60)" fill="#c2618a" stroke="#7c3054" stroke-width=".4"/><use href="#ptC" transform="rotate(120)" fill="#b34a75" stroke="#7c3054" stroke-width=".4"/><use href="#ptC" transform="rotate(180)" fill="#c2618a" stroke="#7c3054" stroke-width=".4"/><use href="#ptC" transform="rotate(240)" fill="#b34a75" stroke="#7c3054" stroke-width=".4"/><use href="#ptC" transform="rotate(300)" fill="#c2618a" stroke="#7c3054" stroke-width=".4"/><circle r="4.2" fill="#e3c25f" stroke="#a8842f" stroke-width=".5"/></g><path d="M96 118 L 96 128 M96 123 L 224 123 M224 118 L 224 128" stroke="#5d5642" stroke-width="1" fill="none"/><text x="160" y="118" font-family="Georgia,serif" font-size="10" fill="#5d5642" text-anchor="middle">3–4 cm</text><text x="52" y="34" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="11" fill="#8f8570">瓣缘皱缩如绉纱</text><line x1="86" y1="38" x2="130" y2="52" stroke="#8f8570" stroke-width=".8"/><text x="268" y="142" font-family="Georgia,serif" font-size="9" font-style="italic" fill="#8f8570">flower specimen</text></svg>` },
+  { no:"物证肆", name:"花序标本", short:"花序",
+    note:"<b>查验所记</b>　顶生圆锥花序，主轴一分再分，花簇密集，远望如彩云驻枝。",
+    svg:`<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#f8f3e3"/><g stroke="#6f5c3e" stroke-width="1.2" fill="none"><path d="M160 140 L 160 96"/><path d="M160 96 L 128 66 M160 96 L 192 66 M160 106 L 138 84 M160 106 L 182 84"/><path d="M128 66 L 112 46 M128 66 L 138 42 M192 66 L 208 46 M192 66 L 182 42 M160 96 L 160 60"/></g><g fill="#b34a75" stroke="#7c3054" stroke-width=".5"><circle cx="112" cy="44" r="7"/><circle cx="138" cy="40" r="6"/><circle cx="208" cy="44" r="7"/><circle cx="182" cy="40" r="6"/><circle cx="160" cy="56" r="6.5"/><circle cx="128" cy="62" r="5"/><circle cx="192" cy="62" r="5"/><circle cx="160" cy="92" r="4.5"/></g><text x="262" y="76" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="11" fill="#8f8570">顶生圆锥花序</text><line x1="212" y1="72" x2="228" y2="74" stroke="#8f8570" stroke-width=".8"/><text x="56" y="142" font-family="Georgia,serif" font-size="9" font-style="italic" fill="#8f8570">panicle specimen</text></svg>` },
+  { no:"物证伍", name:"花期记录", short:"花期",
+    note:"<b>查验所记</b>　自六月起，至九月方歇，约百日；盛花在 7–8 月。",
+    svg:`<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="150" fill="#f8f3e3"/><line x1="40" y1="86" x2="290" y2="86" stroke="#5d5642" stroke-width="1.4"/><g font-family="Georgia,serif" font-size="10" fill="#8f8570" text-anchor="middle"><text x="52" y="104">1</text><text x="90" y="104">3</text><text x="128" y="104">5</text><text x="166" y="104">7</text><text x="204" y="104">9</text><text x="242" y="104">11</text><text x="278" y="104">12</text></g><g stroke="#5d5642" stroke-width="1"><line x1="52" y1="82" x2="52" y2="90"/><line x1="128" y1="82" x2="128" y2="90"/><line x1="204" y1="82" x2="204" y2="90"/><line x1="278" y1="82" x2="278" y2="90"/></g><rect x="147" y="78" width="66" height="16" fill="#8d4a6b" opacity=".85"/><text x="180" y="66" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="11.5" fill="#8d4a6b" text-anchor="middle">约百日 · 6–9 月</text><text x="160" y="132" font-family="Georgia,serif" font-size="9" font-style="italic" fill="#8f8570" text-anchor="middle">bloom calendar</text></svg>` },
+];
+
+/* 嫌疑人：photo=剪影小像 */
+const SUSPECTS = [
+  { id:"speciosa", 名:"大花紫薇", 学名:"Lagerstroemia speciosa",
+    traits:["叶长 10–25 厘米","花径 5–8 厘米","瓣平展几乎不皱","主产华南及南亚"],
+    photo:`<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#f8f3e3"/><g transform="translate(32 34)"><path d="M0 -6 Q -4 -20 -8 -30 Q -12 -36 -7 -38 Q -2 -40 -3 -32 Q 0 -42 3 -32 Q 4 -40 9 -38 Q 14 -36 10 -30 Q 6 -20 0 -6" fill="#b34a75"/><path d="M0 -6 Q 20 -14 30 -8 Q 36 -4 30 2 Q 22 8 0 -6" fill="#c2618a"/><path d="M0 -6 Q -20 -14 -30 -8 Q -36 -4 -30 2 Q -22 8 0 -6" fill="#c2618a"/><circle r="4" fill="#e3c25f"/></g></svg>` },
+  { id:"subcostata", 名:"南紫薇", 学名:"Lagerstroemia subcostata",
+    traits:["又名九芎","花白色，花径约 1–2 厘米","树皮光滑如涂蜡"],
+    photo:`<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#f8f3e3"/><g transform="translate(24 22) scale(.42)"><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(72)" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(144)" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(216)" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(288)" fill="#e8e2d2" stroke="#a99a72"/><circle r="3" fill="#d9c98a"/></g><g transform="translate(44 40) scale(.28)"><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(90)" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(180)" fill="#e8e2d2" stroke="#a99a72"/><path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z" transform="rotate(270)" fill="#e8e2d2" stroke="#a99a72"/></g></svg>` },
+  { id:"caudata", 名:"尾叶紫薇", 学名:"Lagerstroemia caudata",
+    traits:["叶先端尾状长尖","花白至淡紫","花较小"],
+    photo:`<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#f8f3e3"/><g transform="translate(20 46)"><path d="M0 0 C 6 -10, 18 -16, 30 -14 C 36 -13, 37 -7, 33 -3 L 30 -1 C 40 -4, 50 -10, 55 -18 C 52 -4, 38 6, 20 8 C 10 9, 2 6, 0 0 Z" fill="#5b7246" stroke="#41552f"/></g><path d="M50 28 C 56 20, 60 14, 60 8" stroke="#41552f" stroke-width="1.6" fill="none"/><text x="14" y="58" font-family="Kaiti SC,STKaiti,KaiTi,serif" font-size="9" fill="#8f8570">尾状长尖</text></svg>` },
+];
+
+/* 排除矩阵：verdict: "排除" | "存疑"；reason 为比对结论 */
+const MATRIX = {
+  "树皮标本": {
+    speciosa:  {verdict:"存疑", reason:"大花紫薇树皮亦较光滑剥落。同属树皮多光滑，此特征不具区分力。"},
+    subcostata:{verdict:"存疑", reason:"南紫薇（九芎）正是以\"光滑如涂蜡\"著称。树皮相类，不能据此排除。"},
+    caudata:   {verdict:"存疑", reason:"尾叶紫薇树皮亦然。同属之皮大同小异。"},
+  },
+  "叶片标本": {
+    speciosa:  {verdict:"排除", reason:"大花紫薇之叶长 10–25 厘米，数倍于证物之 3–7 厘米。叶不类，排除。"},
+    subcostata:{verdict:"存疑", reason:"南紫薇叶形与大小同紫薇相近，光凭叶片难分彼此。"},
+    caudata:   {verdict:"排除", reason:"尾叶紫薇叶先端作尾状长尖，证物叶先端短尖、绝无长尾。排除。"},
+  },
+  "花之标本": {
+    speciosa:  {verdict:"排除", reason:"大花紫薇花径 5–8 厘米、瓣平展不皱；证物花仅 3–4 厘米、瓣皱如绉纱。排除。"},
+    subcostata:{verdict:"排除", reason:"南紫薇花白色，花径约 1–2 厘米；证物花绯紫红，径 3–4 厘米。色、量皆不类，排除。"},
+    caudata:   {verdict:"排除", reason:"尾叶紫薇花白至淡紫；证物花为绯紫红皱瓣。排除。"},
+  },
+  "花序标本": {
+    speciosa:  {verdict:"存疑", reason:"大花紫薇同为顶生圆锥花序。花序是家族共性，不具区分力。"},
+    subcostata:{verdict:"存疑", reason:"同属皆圆锥花序，不能据此排除。"},
+    caudata:   {verdict:"存疑", reason:"同上。花序之形为家族共性。"},
+  },
+  "花期记录": {
+    speciosa:  {verdict:"存疑", reason:"大花紫薇夏秋亦开，花期相仿。不能据此排除。"},
+    subcostata:{verdict:"存疑", reason:"南紫薇花期亦在夏秋。花期相近，不足为凭。"},
+    caudata:   {verdict:"存疑", reason:"花期相仿。但\"百日不断\"之盛，仍是紫薇的旁证。"},
+  },
+};
+
+/* ═══════════════ 引擎 ═══════════════ */
+(function engine(){
+  const $ = s => document.querySelector(s);
+  const state = {
+    opened:new Set(), excluded:new Set(), compared:new Set(), guess:"", notes:[],
+  };
+
+  /* 封面 */
+  $("#btnOpen").addEventListener("click", ()=>{
+    state.guess = $("#guessInput").value.trim();
+    $("#cover").classList.add("gone");
+    $("#case").classList.add("on");
+    log("开卷。留初判：" + (state.guess ? "「"+state.guess+"」" : "（未留）"));
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+
+  /* 证物 */
+  const eviList = $("#evidenceList");
+  EVIDENCE.forEach((ev,i)=>{
+    const btn = document.createElement("button");
+    btn.className = "evi";
+    btn.setAttribute("aria-expanded","false");
+    btn.innerHTML = `<span class="ev-no">${ev.no}</span><div class="ev-name">${ev.name}</div><div class="ev-status">未查验 · 点开取证</div>`;
+    btn.addEventListener("click", ()=>toggleEvi(i, btn));
+    eviList.appendChild(btn);
+
+    const body = document.createElement("div");
+    body.className = "evi-body"; body.id = "eviBody"+i;
+    body.innerHTML = ev.svg + `<div class="evi-note">${ev.note}</div>`;
+    eviList.appendChild(body);
+  });
+  function toggleEvi(i, btn){
+    const body = $("#eviBody"+i);
+    const wasOpen = body.classList.contains("on");
+    document.querySelectorAll(".evi-body").forEach(b=>b.classList.remove("on"));
+    if(wasOpen) return;
+    body.classList.add("on");
+    btn.setAttribute("aria-expanded","true");
+    if(!state.opened.has(i)){
+      state.opened.add(i);
+      btn.classList.add("verified");
+      btn.querySelector(".ev-status").textContent = "已查验";
+      const st = document.createElement("span");
+      st.className = "ev-stamp"; st.textContent = "已验";
+      btn.appendChild(st);
+      log(`取证：${EVIDENCE[i].name}。特征已录入审讯记录。`);
+      renderSuspects(); renderStrip();
+    }
+  }
+
+  /* 嫌疑人（含逐证审讯记录） */
+  const suList = $("#suspectList");
+  function suEvState(evIdx, su){
+    if(!state.opened.has(evIdx)) return "locked";
+    const cell = MATRIX[EVIDENCE[evIdx].name][su.id];
+    if(state.compared.has(evIdx+":"+su.id)){
+      if(cell.verdict==="排除") return state.excluded.has(su.id) ? "cut" : "ready";
+      return "hold";
+    }
+    return "cmp";
+  }
+  function renderSuspects(){
+    suList.innerHTML = "";
+    SUSPECTS.forEach(s=>{
+      const card = document.createElement("div");
+      card.className = "suspect" + (state.excluded.has(s.id)?" excluded":"");
+      card.id = "su"+s.id;
+      const chips = EVIDENCE.map((ev,i)=>{
+        const st = suEvState(i,s);
+        const label = {locked:"未证",cmp:"比对",ready:"可排除",hold:"存疑",cut:"✕ 已排除"}[st];
+        return st==="locked"
+          ? `<span class="su-ev st-locked" title="先查验证物">${ev.short}·未证</span>`
+          : `<button class="su-ev st-${st}" data-ev="${i}" data-su="${s.id}">${ev.short}·${label}</button>`;
+      }).join("");
+      card.innerHTML =
+        `<span class="su-excl">排除</span>
+         <div class="su-row">
+           <div class="su-photo">${s.photo}</div>
+           <div>
+             <div class="su-name">${s.名}</div>
+             <div class="su-latin"><i>${s.学名}</i></div>
+             <div class="su-traits">${s.traits.map(t=>`<span>${t}</span>`).join("")}</div>
+           </div>
+         </div>
+         <div class="su-interro">
+           <div class="si-tt">审讯记录 · 逐证比对</div>
+           <div class="su-evs">${chips}</div>
+           <div class="su-cmp" id="suCmp${s.id}"></div>
+         </div>`;
+      card.querySelectorAll("button.su-ev").forEach(b=>{
+        b.addEventListener("click", ()=>showCmp(+b.dataset.ev, b.dataset.su));
+      });
+      suList.appendChild(card);
+    });
+  }
+
+  /* 排除总览条 */
+  function renderStrip(){
+    $("#mxStrip").innerHTML = SUSPECTS.map(s=>{
+      const cut = state.excluded.has(s.id);
+      const dots = EVIDENCE.map((ev,i)=>{
+        const st = suEvState(i,s);
+        const cls = {locked:"",cmp:"",ready:"ready",hold:"hold",cut:"cut"}[st];
+        const tx  = {locked:"·",cmp:"·",ready:"可",hold:"疑",cut:"✕"}[st];
+        return `<span class="mxs-dot ${cls}" title="${ev.name}">${tx}</span>`;
+      }).join("");
+      return `<div class="mxs-col ${cut?"cut":""}">
+        <div class="mxs-name"><span>${s.名}</span>${cut?'<span class="mxs-mark">已排除</span>':""}</div>
+        <div class="mxs-dots">${dots}</div></div>`;
+    }).join("");
+  }
+
+  /* 比对（在嫌疑人卡内展开） */
+  function showCmp(evIdx, suId){
+    state.compared.add(evIdx+":"+suId);
+    renderSuspects(); renderStrip();
+    const ev = EVIDENCE[evIdx], su = SUSPECTS.find(s=>s.id===suId), cell = MATRIX[ev.name][suId];
+    const d = $("#suCmp"+suId);
+    d.classList.add("on");
+    d.innerHTML =
+      `<div class="cd-title">比对 · ${ev.name} × ${su.名}</div>
+       <table>
+         <tr><th>证物所记</th><td>${ev.note.replace(/<b>.*?<\/b>\s*/,"")}</td></tr>
+         <tr><th>嫌疑人</th><td>${su.traits.join("；")}。</td></tr>
+         <tr><th>结论</th><td>${cell.reason}</td></tr>
+       </table>
+       <div class="cd-verdict">
+         <span class="cd-tag ${cell.verdict==="排除"?"cut":"hold"}">${cell.verdict==="排除"?"特征不类，可以排除":"特征相类，不能排除"}</span>
+         ${cell.verdict==="排除" && !state.excluded.has(suId)
+            ? `<button class="cd-cut">据此排除 ${su.名}</button>` : ""}
+       </div>`;
+    const cutBtn = d.querySelector(".cd-cut");
+    if(cutBtn) cutBtn.addEventListener("click", ()=>exclude(suId, ev.name));
+  }
+
+  function exclude(suId, via){
+    state.excluded.add(suId);
+    const su = SUSPECTS.find(s=>s.id===suId);
+    log(`据「${via}」排除 ${su.名}（${state.excluded.size}/3）。`);
+    renderSuspects(); renderStrip();
+    $("#caseStatus").textContent = state.excluded.size===3 ? "可结案" : `已排除 ${state.excluded.size}/3`;
+    if(state.excluded.size===3){
+      $("#verdictBar").classList.add("on");
+      log("三名嫌疑人均已排除。真相不在同属近亲之中——请呈请结案。");
+      $("#btnVerdict").scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  }
+
+  renderSuspects(); renderStrip();
+
+  /* 笔记 */
+  function log(text){
+    state.notes.push(text);
+    const ol = $("#notesList");
+    ol.innerHTML = state.notes.map((n,i)=>`<li><b>${String(i+1).padStart(2,"0")}</b>${n}</li>`).join("");
+  }
+
+  /* 结案 */
+  $("#btnVerdict").addEventListener("click", openReveal);
+  function openReveal(){
+    $("#rvLatin").innerHTML = "<i>"+FLOWER.学名+"</i>";
+    $("#rvAlias").textContent = "别名：" + FLOWER.别名.join("、");
+    /* 初判拆验 */
+    const g = state.guess;
+    const hit = g && ["紫薇","百日红","痒痒树","无皮树","满堂红"].some(k=>g.includes(k));
+    let judge;
+    if(!g) judge = "<b>初判</b>　开卷时未留初判。大胆直觉、小心求证，下次试试。";
+    else if(hit) judge = `<b>初判拆验</b>　「${g}」——命中。天生的植物侦探，直觉与证据相符。`;
+    else judge = `<b>初判拆验</b>　开卷时你写的是「${g}」，而真相是紫薇。直觉失手处，正是下次的学问。`;
+    $("#rvJudge").innerHTML = judge;
+    /* 诗词 */
+    $("#rvPoem").innerHTML = FLOWER.诗词.map(p=>
+      `<div class="p"><div class="pl">${p.句.join("<br>")}</div><div class="pa">${p.代} · ${p.人}《${p.题}》</div></div>`).join("");
+    /* 档案 */
+    $("#rvArch").innerHTML = FLOWER.档案.map(r=>`<tr><th scope="row">${r[0]}</th><td>${r[1]}</td></tr>`).join("");
+    $("#rvMorph").innerHTML = FLOWER.形态.map(r=>`<p><b>${r[0]}</b>　${r[1]}</p>`).join("");
+    $("#rvDist").innerHTML  = FLOWER.分布.map(r=>`<p><b>${r[0]}</b>　${r[1]}</p>`).join("");
+    $("#rvCmp").innerHTML = `<thead><tr><th>名称</th><th>学名</th><th>花色</th><th>与紫薇之差异</th></tr></thead><tbody>`+
+      FLOWER.近亲.map(k=>`<tr><td>${k.名}</td><td>${k.学名}</td><td>${k.花色}</td><td>${k.区别}</td></tr>`).join("")+`</tbody>`;
+    $("#rvRecog").innerHTML = FLOWER.识别.map(r=>`<p><b>${r.法}</b>　${r.述}</p>`).join("");
+    $("#rvMnem").innerHTML = FLOWER.口诀.join("<br>");
+    $("#rvFacts").innerHTML = FLOWER.趣闻.map(f=>`<p><b>${f.题}</b>　${f.文}</p>`).join("");
+    $("#rvPheno").innerHTML = `<p><b>${FLOWER.物候.地}</b>　${FLOWER.物候.观}</p>`+
+      FLOWER.物候.提.map(t=>`<p>${t}</p>`).join("");
+    /* 推理链回放 */
+    $("#rvReplay").innerHTML = state.notes.map((n,i)=>`<li><b>第${String(i+1).padStart(2,"0")}手</b>${n}</li>`).join("");
+    $("#reveal").classList.add("on");
+    $("#reveal").scrollTop = 0;
+    document.body.style.overflow = "hidden";
+  }
+  $("#btnAgain").addEventListener("click", ()=>{ location.reload(); });
+})();
+</script>
+</body>
+</html>

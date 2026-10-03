@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日一花 · 格物志 —— 紫薇</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  每日一花 · 创意模板 A 「格物」纸本植物志
+  ───────────────────────────────────────────────────────────────
+  核心概念：把网页做成一页可批注、可摩挲的植物志手稿。
+  读者不再是"浏览者"，而是"批注者"——细察（放大镜）、摩挲（痒痒树）、
+  显影（墨迹诗句）、展开（近亲折页）。
+
+  数据契约：全文内容渲染自下方 FLOWER 数据对象（映射 SKILL.md 十二模块）。
+  复用方法：替换 FLOWER 的字段即可生成新花卉页面；
+  插图 SVG（id=plateSvg）由 Skill 按花卉重绘，保留 viewBox="0 0 680 500"。
+  交互对插图的要求：#tickleZone（可挠树干热区）、.an（标准标注）、
+  .an-deep（放大镜下才浮现的深察注）。若替换 SVG 未包含这些分组，
+  对应交互将自动静默降级，页面仍完整可用。
+
+  运行方式：双击本文件直接在浏览器打开（file://，无任何外部依赖）。
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --paper:#f4edda;
+    --paper-2:#ede3c9;
+    --paper-edge:#e2d5b4;
+    --ink:#2c261d;
+    --ink-soft:#5a5142;
+    --ink-faint:#8a7f6a;
+    --rule:#b9a97f;
+    --rule-soft:#cfc2a0;
+    --cinnabar:#9d3b25;
+    --crimson:#8d4a6b;
+    --crimson-deep:#6e3452;
+    --kai:"Kaiti SC","STKaiti","KaiTi","DFKai-SB","BiauKai",serif;
+    --song:"Songti SC","STSong","NSimSun","SimSun","Noto Serif SC",serif;
+    --latin:Georgia,"Times New Roman",serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:#332e27;
+    background-image:radial-gradient(ellipse at 50% 0%, #3d372f 0%, #332e27 55%, #272320 100%);
+    color:var(--ink);
+    font-family:var(--song);
+    line-height:1.9;
+    padding:48px 16px 96px;
+  }
+  ::selection{background:rgba(157,59,37,.25)}
+
+  /* ── 案上之纸 ─────────────────────────── */
+  .sheet{
+    max-width:1120px;margin:0 auto;position:relative;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .40 0 0 0 0 .30 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(175deg,var(--paper) 0%,var(--paper-2) 100%);
+    border:1px solid #a8996f;
+    box-shadow:0 1px 0 rgba(255,250,230,.35) inset,0 24px 70px rgba(0,0,0,.5),0 4px 14px rgba(0,0,0,.35);
+    padding:12px;
+  }
+  .sheet-inner{
+    border:1px solid var(--rule);
+    outline:1px solid var(--rule-soft);
+    outline-offset:3px;
+    padding:56px 44px 64px;
+    position:relative;
+  }
+  /* ── 对开册页：左图右文，中缝书脊 ────────── */
+  .spread{
+    display:grid;grid-template-columns:1fr 1fr;gap:0 56px;position:relative;
+  }
+  .spread::before{
+    content:"";position:absolute;top:6px;bottom:6px;left:50%;width:34px;transform:translateX(-50%);
+    background:linear-gradient(90deg,transparent 0%,rgba(120,98,58,.10) 26%,rgba(120,98,58,.22) 50%,rgba(120,98,58,.10) 74%,transparent 100%);
+    pointer-events:none;
+  }
+  .page{min-width:0}
+  .page-l{padding-right:10px}
+  .page-r{padding-left:10px}
+  .page-foot{
+    margin-top:44px;text-align:center;font-family:var(--kai);font-size:11px;
+    color:var(--ink-faint);letter-spacing:.5em;text-indent:.5em;
+  }
+  .page-foot::before{content:"";display:block;width:56px;height:1px;background:var(--rule);margin:0 auto 10px}
+  /* 版心四角标记 */
+  .sheet-inner::before,.sheet-inner::after{
+    content:"";position:absolute;width:14px;height:14px;pointer-events:none;
+  }
+  .sheet-inner::before{top:8px;left:8px;border-top:2px solid var(--rule);border-left:2px solid var(--rule)}
+  .sheet-inner::after{bottom:8px;right:8px;border-bottom:2px solid var(--rule);border-right:2px solid var(--rule)}
+
+  /* ── 题签与朱印 ────────────────────────── */
+  .slip{
+    position:absolute;top:40px;right:-26px;
+    writing-mode:vertical-rl;
+    font-family:var(--kai);font-size:15px;letter-spacing:.45em;
+    color:var(--ink-soft);
+    border:1px solid var(--rule);background:var(--paper-2);
+    padding:18px 9px 12px;line-height:2.1;
+    box-shadow:2px 3px 8px rgba(60,45,20,.25);
+    transform:rotate(.6deg);
+  }
+  .seal{
+    margin-top:14px;align-self:center;
+    width:40px;height:40px;background:var(--cinnabar);
+    color:#f6efdc;font-family:var(--kai);font-size:15px;
+    writing-mode:vertical-rl;letter-spacing:.1em;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:3px;
+    box-shadow:0 0 0 2px rgba(157,59,37,.28) inset,0 1px 3px rgba(90,30,15,.4);
+    transform:rotate(-4deg);opacity:.92;
+  }
+
+  /* ── 头部 ─────────────────────────────── */
+  header.ti{text-align:center;margin-bottom:34px;position:relative}
+  .ti .no{
+    font-size:12px;letter-spacing:.5em;color:var(--ink-faint);
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    display:inline-block;padding:4px 18px;margin-bottom:26px;
+  }
+  .ti h1{
+    font-family:var(--kai);font-weight:400;
+    font-size:clamp(56px,9vw,84px);letter-spacing:.22em;
+    text-indent:.22em;line-height:1.15;
+  }
+  .ti .latin{
+    font-family:var(--latin);font-style:italic;font-size:16px;
+    color:var(--ink-soft);margin-top:6px;letter-spacing:.06em;
+  }
+  .ti .subtitle{
+    font-family:var(--kai);font-size:15px;color:var(--crimson-deep);
+    margin-top:14px;letter-spacing:.3em;
+  }
+  .ti .subtitle::before,.ti .subtitle::after{content:"";display:inline-block;width:34px;height:1px;background:var(--rule);vertical-align:middle;margin:0 14px}
+
+  /* ── 章节标题 ─────────────────────────── */
+  section{margin-top:44px}
+  section:first-child{margin-top:0}
+  h2.sec{
+    font-family:var(--kai);font-weight:400;font-size:21px;letter-spacing:.28em;
+    display:flex;align-items:baseline;gap:14px;margin-bottom:22px;color:var(--ink);
+  }
+  h2.sec .num{
+    font-size:12px;color:var(--cinnabar);letter-spacing:.2em;
+    border:1px solid rgba(157,59,37,.4);padding:1px 7px;border-radius:2px;
+    transform:translateY(-3px);white-space:nowrap;
+  }
+  h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--rule),transparent)}
+
+  /* ── 图版 ─────────────────────────────── */
+  .plate-head{
+    display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;
+    font-size:13px;color:var(--ink-soft);letter-spacing:.12em;margin-bottom:10px;
+  }
+  .plate-head em{font-style:normal;color:var(--cinnabar)}
+  .plate-box{
+    position:relative;border:1px solid var(--rule);background:#f6f0de;
+    box-shadow:0 0 0 4px #f6f0de,0 0 0 5px var(--rule-soft);
+    line-height:0;overflow:hidden;touch-action:none;
+  }
+  .plate-box svg{width:100%;height:auto;display:block}
+  .plate-cap{font-size:12.5px;color:var(--ink-faint);margin-top:12px;letter-spacing:.08em;line-height:1.8}
+
+  /* 放大镜 */
+  .loupe{
+    position:absolute;width:190px;height:190px;border-radius:50%;
+    overflow:hidden;pointer-events:none;z-index:5;
+    border:2px solid rgba(90,70,40,.55);
+    box-shadow:0 6px 24px rgba(40,28,10,.35),0 0 0 6px rgba(244,237,218,.25);
+    background:#f6f0de;display:none;
+  }
+  .loupe.on{display:block}
+  .loupe-inner{position:absolute;top:0;left:0;line-height:0}
+  .loupe-inner svg{display:block}
+  .loupe-tag{
+    position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+    font-family:var(--kai);font-size:11px;letter-spacing:.4em;text-indent:.4em;
+    color:var(--cinnabar);background:rgba(244,237,218,.85);
+    border:1px solid rgba(157,59,37,.35);border-radius:10px;padding:0 8px;line-height:1.7;
+  }
+  .plate-box.louping{cursor:crosshair}
+
+  /* 深察浮现注 */
+  .deep-note{
+    position:absolute;z-index:6;max-width:230px;pointer-events:none;
+    font-family:var(--kai);font-size:13px;line-height:1.8;color:#f6efdc;
+    background:rgba(45,35,22,.92);border:1px solid rgba(157,59,37,.7);
+    padding:8px 12px;border-radius:3px;letter-spacing:.05em;
+    opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;
+  }
+  .deep-note.show{opacity:1;transform:translateY(0)}
+  .deep-note::before{content:"深察 · ";color:#d98b6a}
+
+  /* ── 诗词（竖排显影） ────────────────────── */
+  .poem-room{
+    border:1px solid var(--rule);background:rgba(255,252,240,.4);
+    padding:30px 26px 26px;position:relative;
+    display:flex;flex-wrap:wrap;gap:34px;justify-content:flex-end;
+    min-height:300px;
+  }
+  .poem-room .analysis{
+    flex:1 1 100%;min-width:0;font-size:13.5px;color:var(--ink-soft);
+    border-top:1px solid var(--rule-soft);padding:12px 0 0;margin-top:2px;
+  }
+  .poem-room .analysis .lbl{
+    font-family:var(--kai);color:var(--cinnabar);letter-spacing:.3em;font-size:13px;
+    display:block;margin-bottom:6px;
+  }
+  .poem{
+    writing-mode:vertical-rl;font-family:var(--kai);
+    height:250px;
+  }
+  .poem .p-title{font-size:16px;letter-spacing:.3em;padding-top:4px}
+  .poem .p-author{font-size:12px;color:var(--ink-faint);letter-spacing:.25em;padding-top:6px}
+  .poem .p-lines{padding-top:2px}
+  .poem .ln{display:block;font-size:17px;letter-spacing:.32em;line-height:2.3}
+  .poem .ln i{font-style:normal}
+  /* 墨迹显影 */
+  .poem .ink{opacity:.06;filter:blur(2px);transition:opacity 1.1s ease,filter 1.1s ease}
+  .poem.inked .ink{opacity:1;filter:blur(0)}
+
+  /* ── 档案（古籍行格） ────────────────────── */
+  table.archives{
+    width:100%;border-collapse:collapse;font-size:14px;
+    border-top:2px solid var(--ink-soft);border-bottom:2px solid var(--ink-soft);
+  }
+  table.archives th{
+    font-family:var(--kai);font-weight:400;text-align:left;white-space:nowrap;
+    width:7.5em;padding:10px 14px 10px 4px;letter-spacing:.3em;
+    color:var(--cinnabar);border-bottom:1px solid var(--rule-soft);vertical-align:top;
+  }
+  table.archives td{
+    padding:10px 4px;border-bottom:1px solid var(--rule-soft);color:var(--ink);letter-spacing:.04em;
+  }
+  table.archives tr:last-child th,table.archives tr:last-child td{border-bottom:none}
+  table.archives i{font-family:var(--latin)}
+
+  /* ── 正文与夹注 ────────────────────────── */
+  .prose{font-size:14.5px;letter-spacing:.05em}
+  .prose p{margin-bottom:12px;text-align:justify}
+  .prose b{font-family:var(--kai);font-weight:400;color:var(--crimson-deep);letter-spacing:.15em}
+  .prose .side-note{
+    float:right;width:158px;margin:2px -6px 12px 18px;
+    font-family:var(--kai);font-size:12.5px;color:var(--ink-soft);line-height:2;
+    border:1px solid var(--rule-soft);background:rgba(255,252,240,.5);
+    padding:10px 12px;letter-spacing:.1em;
+  }
+  .prose .side-note::before{content:"眉批";display:block;font-size:11px;color:var(--cinnabar);letter-spacing:.4em;border-bottom:1px solid var(--rule-soft);margin-bottom:6px;padding-bottom:4px}
+
+  /* ── 年轮尺（花期时间轴） ─────────────────── */
+  .ring-strip{
+    position:relative;height:86px;margin:14px 0 4px;
+    border-bottom:2px solid var(--ink-soft);
+    user-select:none;
+  }
+  .ring-months{position:absolute;left:0;right:0;bottom:-26px;display:flex}
+  .ring-months span{flex:1;text-align:center;font-size:10px;color:var(--ink-faint);letter-spacing:.05em}
+  .ring-band{
+    position:absolute;top:30px;height:26px;
+    background:linear-gradient(90deg,rgba(141,74,107,.16),rgba(141,74,107,.42),rgba(141,74,107,.16));
+    border-left:1px dashed var(--crimson);border-right:1px dashed var(--crimson);
+  }
+  .ring-band em{
+    position:absolute;top:-24px;left:0;right:0;text-align:center;font-style:normal;
+    font-family:var(--kai);font-size:12px;color:var(--crimson-deep);letter-spacing:.25em;
+  }
+  .ring-dot{
+    position:absolute;top:43px;width:11px;height:11px;border-radius:50%;
+    background:var(--paper);border:2px solid var(--ink-soft);
+    transform:translate(-50%,-50%);cursor:pointer;transition:transform .2s,background .2s;
+  }
+  .ring-dot:hover,.ring-dot.on{background:var(--cinnabar);border-color:var(--cinnabar);transform:translate(-50%,-50%) scale(1.25)}
+  .ring-dot i{
+    position:absolute;top:-46px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:8px;height:8px;background:var(--rule-soft);display:none;
+  }
+  .ring-note{
+    min-height:44px;margin-top:34px;font-family:var(--kai);font-size:14.5px;
+    color:var(--ink-soft);letter-spacing:.08em;
+    border-left:3px solid var(--cinnabar);padding:2px 0 2px 14px;
+  }
+  .ring-note b{color:var(--cinnabar);font-weight:400;margin-right:10px}
+
+  /* ── 近亲折页 ─────────────────────────── */
+  .foldout{border:1px solid var(--rule);position:relative;background:var(--paper-2);overflow:hidden}
+  .foldout>.fold-head{
+    display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+    padding:14px 20px;font-family:var(--kai);letter-spacing:.25em;font-size:15px;
+    background:linear-gradient(180deg,rgba(255,252,240,.6),rgba(226,213,180,.35));
+    user-select:none;
+  }
+  .foldout>.fold-head .arrow{
+    font-size:12px;color:var(--cinnabar);letter-spacing:.1em;transition:transform .4s;
+  }
+  .foldout.open>.fold-head .arrow{transform:rotate(90deg)}
+  .fold-body{max-height:0;transition:max-height .7s cubic-bezier(.6,0,.2,1);overflow:hidden}
+  .foldout.open .fold-body{max-height:1200px}
+  .fold-inner{padding:6px 20px 22px;overflow-x:auto;background:
+    repeating-linear-gradient(90deg,transparent 0 33.33%,rgba(185,169,127,.28) 33.33% calc(33.33% + 1px));}
+  table.compare{min-width:460px}
+  .fold-cols{display:flex;gap:1px;background:var(--rule-soft);border:1px solid var(--rule-soft);margin:14px 0 18px}
+  .fold-cols>div{flex:1;background:var(--paper);padding:14px 14px 12px;font-size:12.5px}
+  .fold-cols .rel-name{font-family:var(--kai);font-size:16px;letter-spacing:.15em;color:var(--crimson-deep)}
+  .fold-cols .rel-latin{font-family:var(--latin);font-style:italic;font-size:11.5px;color:var(--ink-faint);display:block;margin:2px 0 8px}
+  .fold-cols p{color:var(--ink-soft);line-height:1.8}
+  table.compare{
+    width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper);
+  }
+  table.compare th{
+    font-family:var(--kai);font-weight:400;letter-spacing:.2em;
+    background:var(--ink-soft);color:#f4edda;padding:8px 10px;text-align:left;
+  }
+  table.compare td{padding:8px 10px;border-bottom:1px solid var(--rule-soft);color:var(--ink-soft);vertical-align:top}
+  table.compare tr td:first-child{font-family:var(--kai);color:var(--ink)}
+  table.compare td i{font-family:var(--latin);font-size:11.5px}
+
+  /* ── 朱批口诀 ─────────────────────────── */
+  .mnemonic{
+    font-family:var(--kai);font-size:17px;letter-spacing:.2em;line-height:2.4;
+    color:var(--cinnabar);text-align:center;padding:26px 10px 20px;
+    border:1px solid rgba(157,59,37,.35);position:relative;
+    background:
+      radial-gradient(circle at 18% 20%,rgba(157,59,37,.05),transparent 40%),
+      rgba(255,252,240,.45);
+  }
+  .mnemonic::before{
+    content:"朱批";position:absolute;top:-12px;left:26px;background:var(--paper);
+    font-size:12px;letter-spacing:.5em;text-indent:.5em;color:var(--cinnabar);padding:0 10px;
+  }
+
+  /* ── 按语趣闻 ─────────────────────────── */
+  .asides .aside{
+    display:flex;gap:14px;padding:13px 2px;border-bottom:1px dashed var(--rule-soft);
+    font-size:13.5px;align-items:baseline;
+  }
+  .asides .aside:last-child{border-bottom:none}
+  .asides .aside .mark{
+    font-family:var(--kai);color:#f4edda;background:var(--ink-soft);
+    font-size:11px;padding:2px 7px;border-radius:2px;white-space:nowrap;letter-spacing:.2em;
+    flex-shrink:0;transform:translateY(-1px);
+  }
+  .asides .aside b{font-family:var(--kai);font-weight:400;color:var(--crimson-deep);margin-right:6px}
+
+  /* ── 识别要点 ─────────────────────────── */
+  .recognize{counter-reset:rk}
+  .recognize li{
+    list-style:none;counter-increment:rk;display:flex;gap:12px;
+    padding:9px 0;border-bottom:1px solid var(--rule-soft);font-size:13.5px;align-items:baseline;
+  }
+  .recognize li:last-child{border-bottom:none}
+  .recognize li::before{
+    content:"其" counter(rk);font-family:var(--kai);color:var(--cinnabar);
+    letter-spacing:.1em;white-space:nowrap;
+  }
+  .recognize li b{font-family:var(--kai);font-weight:400;letter-spacing:.1em}
+
+  /* ── 物候 ─────────────────────────────── */
+  .phenology{
+    border:1px solid var(--rule);padding:20px 24px;background:rgba(255,252,240,.45);
+  }
+  .phenology .ph-loc{font-family:var(--kai);letter-spacing:.2em;color:var(--crimson-deep);margin-bottom:8px}
+  .phenology p{font-size:13.5px;color:var(--ink-soft);margin-bottom:8px}
+  .phenology ul{list-style:none}
+  .phenology li{font-size:13px;color:var(--ink-soft);padding:3px 0;letter-spacing:.03em}
+  .phenology li::before{content:"◦ ";color:var(--cinnabar)}
+
+  /* ── 跋页 ─────────────────────────────── */
+  .postscript{
+    margin-top:48px;border:1px dashed var(--rule);padding:20px 22px 16px;
+    background:rgba(255,252,240,.4);position:relative;
+  }
+  .postscript .ps-mark{
+    position:absolute;top:-11px;left:18px;background:var(--paper);
+    font-family:var(--kai);font-size:12px;letter-spacing:.4em;color:var(--cinnabar);padding:0 8px;
+  }
+  .postscript p{font-family:var(--kai);font-size:13.5px;color:var(--ink-soft);letter-spacing:.06em;text-align:justify;line-height:2.2}
+  .postscript .ps-seal{
+    width:34px;height:34px;margin:10px 2px 0 auto;background:var(--cinnabar);color:#f6efdc;
+    font-family:var(--kai);font-size:12px;display:flex;align-items:center;justify-content:center;
+    border-radius:3px;transform:rotate(-4deg);opacity:.92;letter-spacing:.05em;
+    box-shadow:0 0 0 2px rgba(157,59,37,.25) inset;
+  }
+
+  /* ── 尾注 ─────────────────────────────── */
+  footer{
+    margin-top:64px;padding-top:18px;border-top:1px solid var(--rule);
+    font-size:11.5px;color:var(--ink-faint);letter-spacing:.12em;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;
+  }
+
+  /* 落花 */
+  .fall-petal{position:absolute;z-index:4;pointer-events:none}
+
+  /* ── 窄屏 ─────────────────────────────── */
+  @media (max-width:900px){
+    .spread{grid-template-columns:1fr}
+    .spread::before{display:none}
+    .page-l{padding-right:0}
+    .page-r{padding-left:0}
+    .page-r section:first-child{margin-top:44px}
+    .page-foot{display:none}
+  }
+  @media (max-width:760px){
+    body{padding:20px 8px 60px}
+    .sheet-inner{padding:44px 22px 48px}
+    .slip{position:static;writing-mode:horizontal-tb;transform:none;margin:0 auto 22px;
+      display:flex;align-items:center;justify-content:center;gap:14px;padding:8px 14px;width:max-content;max-width:100%}
+    .slip .seal{margin-top:0}
+    .poem{height:240px}
+    .poem .ln{font-size:15px}
+    .poem-room{justify-content:center}
+    .poem-room .analysis{border-left:none;border-top:1px solid var(--rule-soft);padding:14px 0 0}
+    .prose .side-note{float:none;width:auto;margin:0 0 12px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<main class="sheet">
+  <div class="sheet-inner">
+
+    <aside class="slip" aria-hidden="true">
+      每日一花 · 格物志
+      <span class="seal">紫薇</span>
+    </aside>
+
+    <header class="ti">
+      <p class="no">第〇六一〇号 · 夏</p>
+      <h1>紫 薇</h1>
+      <p class="latin">Lagerstroemia indica L.</p>
+      <p class="subtitle">百日红的夏日浪漫</p>
+    </header>
+
+    <!-- ═══ 对开册页：卷上（图版） ═══ -->
+    <div class="spread">
+    <div class="page page-l">
+
+    <!-- ═══ 图版壹：花枝写真 ═══ -->
+    <section>
+      <div class="plate-head">
+        <span><em>图版壹</em> · 花枝写真</span>
+        <span>按住图面拖移，可放大细察 · 圈处以指轻挠</span>
+      </div>
+      <div class="plate-box" id="plateBox">
+        <svg id="plateSvg" viewBox="0 0 680 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="紫薇花枝写实图版">
+          <defs>
+            <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse">
+              <path d="M34 0H0V34" fill="none" stroke="#b9a97f" stroke-width=".4" opacity=".22"/>
+            </pattern>
+            <linearGradient id="barkG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#9c8663"/><stop offset=".45" stop-color="#b3a17c"/>
+              <stop offset=".6" stop-color="#a8946e"/><stop offset="1" stop-color="#8d7854"/>
+            </linearGradient>
+            <linearGradient id="twigG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#8d7854"/><stop offset="1" stop-color="#a8946e"/>
+            </linearGradient>
+            <path id="leaf" d="M0 0 C 7 -13, 24 -20, 37 -15 C 44 -12, 43 -3, 33 2 C 19 9, 5 6, 0 0 Z"/>
+            <g id="petal-pair">
+              <path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q -3 -29.5 -1.6 -25.5 Q 0 -30.5 1.6 -25.5 Q 3 -29.5 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z"/>
+            </g>
+            <g id="flower">
+              <use href="#petal-pair" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+              <use href="#petal-pair" transform="rotate(60)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+              <use href="#petal-pair" transform="rotate(120)" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+              <use href="#petal-pair" transform="rotate(180)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+              <use href="#petal-pair" transform="rotate(240)" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+              <use href="#petal-pair" transform="rotate(300)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+              <circle r="4.6" fill="#e3c25f" stroke="#a8842f" stroke-width=".6"/>
+              <g fill="#a8842f"><circle cx="0" cy="-3" r=".9"/><circle cx="2.6" cy="1.6" r=".9"/><circle cx="-2.6" cy="1.6" r=".9"/></g>
+            </g>
+            <g id="bud">
+              <ellipse rx="4.4" ry="7.4" cy="-1" fill="#a63b5c" stroke="#6e2440" stroke-width=".6"/>
+              <path d="M-3 4 Q0 8 3 4 L2.4 7 Q0 9.6 -2.4 7 Z" fill="#5f7a45"/>
+              <path d="M0 5.5 L0 10" stroke="#5f7a45" stroke-width="1.1"/>
+            </g>
+          </defs>
+
+          <rect width="680" height="500" fill="#f6f0de"/>
+          <rect width="680" height="500" fill="url(#grid)"/>
+          <rect x="6" y="6" width="668" height="488" fill="none" stroke="#b9a97f" stroke-width=".8" opacity=".6"/>
+
+          <!-- 主枝（自左下入右上） -->
+          <g id="plateTree">
+            <path d="M236 470 C 250 420, 258 380, 262 340 C 266 296, 280 260, 306 224 C 330 190, 372 158, 424 134 C 470 113, 522 100, 560 96 L 566 108 C 520 116, 474 130, 434 152 C 392 175, 356 206, 332 244 C 308 280, 296 322, 290 366 C 285 404, 280 442, 278 470 Z"
+                  fill="url(#barkG)" stroke="#6f5c3e" stroke-width="1"/>
+            <path d="M262 340 C 266 300, 282 262, 308 226" fill="none" stroke="#c4b48c" stroke-width="1" opacity=".55"/>
+            <!-- 分枝 -->
+            <path d="M306 224 C 300 200, 292 182, 280 168 C 272 158, 262 150, 252 146 L 256 138 C 272 142, 286 152, 296 166 C 308 182, 314 202, 318 218 Z" fill="url(#twigG)" stroke="#6f5c3e" stroke-width=".7"/>
+            <path d="M424 134 C 428 118, 434 104, 444 92 C 452 82, 462 74, 472 70 L 476 78 C 466 84, 458 92, 452 102 C 444 114, 440 126, 438 136 Z" fill="url(#twigG)" stroke="#6f5c3e" stroke-width=".7"/>
+            <path d="M350 208 C 366 214, 382 224, 392 238 C 398 246, 402 256, 404 264 L 396 266 C 392 256, 386 248, 378 242 C 366 232, 352 226, 342 222 Z" fill="url(#twigG)" stroke="#6f5c3e" stroke-width=".7"/>
+
+            <!-- 对生叶 -->
+            <g fill="#5b7246" stroke="#41552f" stroke-width=".8">
+              <use href="#leaf" transform="translate(268 318) rotate(-38)"/>
+              <use href="#leaf" transform="translate(268 318) rotate(142) scale(.92)"/>
+              <use href="#leaf" transform="translate(282 272) rotate(-30) scale(.94)"/>
+              <use href="#leaf" transform="translate(282 272) rotate(150) scale(.86)"/>
+              <use href="#leaf" transform="translate(300 230) rotate(-24) scale(.9)"/>
+              <use href="#leaf" transform="translate(300 230) rotate(156) scale(.8)"/>
+              <use href="#leaf" transform="translate(258 156) rotate(-56) scale(.78)"/>
+              <use href="#leaf" transform="translate(258 156) rotate(124) scale(.72)"/>
+              <use href="#leaf" transform="translate(338 236) rotate(20) scale(.76)"/>
+              <use href="#leaf" transform="translate(338 236) rotate(200) scale(.7)"/>
+              <use href="#leaf" transform="translate(468 88) rotate(-42) scale(.7)"/>
+              <use href="#leaf" transform="translate(468 88) rotate(138) scale(.66)"/>
+              <use href="#leaf" transform="translate(512 108) rotate(28) scale(.62)"/>
+              <use href="#leaf" transform="translate(382 176) rotate(-12) scale(.6)"/>
+            </g>
+            <!-- 叶脉 -->
+            <g stroke="#3c4f30" stroke-width=".6" opacity=".7" fill="none">
+              <path d="M268 318 L 296 302"/><path d="M282 272 L 308 258"/>
+              <path d="M300 230 L 324 220"/><path d="M338 236 L 362 244"/>
+            </g>
+
+            <!-- 圆锥花序（枝顶） -->
+            <g stroke="#6f5c3e" stroke-width="1" fill="none">
+              <path d="M560 96 C 578 92, 596 90, 612 92"/>
+              <path d="M560 96 C 574 104, 588 116, 598 130"/>
+              <path d="M560 96 C 570 86, 578 76, 584 64"/>
+              <path d="M430 200 C 446 206, 460 216, 470 230"/>
+              <path d="M430 200 C 446 196, 462 194, 476 198"/>
+            </g>
+            <g id="bloomMain">
+              <use href="#flower" transform="translate(614 90) scale(1.5)"/>
+              <use href="#flower" transform="translate(590 70) rotate(18) scale(1.15)"/>
+              <use href="#flower" transform="translate(602 132) rotate(-14) scale(1.2)"/>
+              <use href="#flower" transform="translate(560 56) scale(.95)"/>
+              <use href="#flower" transform="translate(628 66) rotate(30) scale(.9)"/>
+              <use href="#flower" transform="translate(566 142) rotate(-30) scale(.85)"/>
+            </g>
+            <g id="bloomSide">
+              <use href="#flower" transform="translate(474 234) scale(1.05)"/>
+              <use href="#flower" transform="translate(478 196) rotate(22) scale(.85)"/>
+              <use href="#flower" transform="translate(440 186) rotate(-18) scale(.8)"/>
+            </g>
+            <g id="budsMain">
+              <use href="#bud" transform="translate(636 108) rotate(24) scale(1.1)"/>
+              <use href="#bud" transform="translate(648 140) rotate(40) scale(.9)"/>
+              <use href="#bud" transform="translate(500 172) rotate(16) scale(.95)"/>
+            </g>
+
+            <!-- 标准标注 -->
+            <g class="an" font-family="'Kaiti SC','STKaiti','KaiTi',serif" font-size="12.5" fill="#5a5142">
+              <g stroke="#8a7f6a" stroke-width=".7" fill="none">
+                <path d="M614 50 L 638 26 L 660 26"/>
+                <path d="M318 300 L 212 268 L 176 268"/>
+                <path d="M596 118 L 630 176 L 656 176"/>
+                <path d="M506 172 L 596 202 L 614 202"/>
+              </g>
+              <text x="664" y="22" text-anchor="end" letter-spacing="2">皱缩如绉纱之花瓣</text>
+              <text x="172" y="264" text-anchor="start" letter-spacing="2">椭圆对生之叶</text>
+              <text x="658" y="172" text-anchor="end" letter-spacing="2">顶生圆锥花序</text>
+              <text x="656" y="206" text-anchor="end" letter-spacing="2">花蕾</text>
+            </g>
+
+            <!-- 深察注热区（放大镜下浮现） -->
+            <g class="deep-hots" opacity="0">
+              <circle class="deep-hot" data-note="瓣缘作波状皱褶，是紫薇属的印记——绉纱之名由此而来。" cx="614" cy="90" r="30"/>
+              <circle class="deep-hot" data-note="花瓣有细长之爪，生于萼筒喉部；雄蕊多数，外轮长而内轮短。" cx="566" cy="142" r="24"/>
+              <circle class="deep-hot" data-note="蒴果成熟后三瓣裂，种子具翅；花后剪去残序，可促二次开花。" cx="636" cy="108" r="22"/>
+            </g>
+
+            <!-- 比例尺 -->
+            <g font-family="Georgia,serif" font-size="11" fill="#5a5142">
+              <path d="M600 262 L 600 274 M600 268 L 644 268 M644 262 L 644 274 M622 265 L 622 271" stroke="#5a5142" stroke-width="1" fill="none"/>
+              <text x="622" y="252" text-anchor="middle">3–4 cm</text>
+              <text x="622" y="292" text-anchor="middle" font-style="italic">花径</text>
+            </g>
+          </g>
+
+          <!-- 树皮写真（痒痒树） -->
+          <g id="barkInset">
+            <rect x="46" y="330" width="150" height="130" fill="#efe6cd" stroke="#b9a97f" stroke-width=".8"/>
+            <path d="M84 452 C 82 430, 82 400, 86 372 C 88 358, 94 344, 102 336 L 138 336 C 146 344, 152 358, 154 372 C 158 400, 158 430, 156 452 Z"
+                  fill="url(#barkG)" stroke="#6f5c3e" stroke-width="1"/>
+            <path d="M104 344 C 100 366, 98 396, 100 430" stroke="#c4b48c" stroke-width="1.2" fill="none" opacity=".6"/>
+            <path d="M136 344 C 140 366, 142 396, 140 430" stroke="#c4b48c" stroke-width="1.2" fill="none" opacity=".6"/>
+            <circle id="tickleZone" cx="120" cy="394" r="42" fill="rgba(157,59,37,.07)" stroke="#9d3b25" stroke-width="1" stroke-dasharray="4 4" style="cursor:pointer"/>
+            <text x="120" y="470" text-anchor="middle" font-family="'Kaiti SC','STKaiti','KaiTi',serif" font-size="12" fill="#9d3b25" letter-spacing="2">树皮写真 · 以指轻挠</text>
+            <text x="121" y="484" text-anchor="middle" font-family="Georgia,serif" font-size="9.5" fill="#8a7f6a" font-style="italic">smooth bark ×0.5</text>
+          </g>
+        </svg>
+
+        <div class="loupe" id="loupe"><div class="loupe-inner" id="loupeInner"></div><span class="loupe-tag">细 察</span></div>
+        <div class="deep-note" id="deepNote"></div>
+      </div>
+      <p class="plate-cap">写实图版，野外可辨识。虚线圈处即"痒痒树"之验：以指轻挠其干，枝叶俱颤。放大镜移至花、果之上，另有深察之注浮现。</p>
+    </section>
+
+    <!-- ═══ 〇一 植物档案（图版之侧的标签牌） ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇一</span>植物档案</h2>
+      <table class="archives" id="archivesTable"></table>
+    </section>
+
+    <!-- ═══ 〇二 野外识别要点 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇二</span>野外识别要点</h2>
+      <ul class="recognize" id="recognizeList"></ul>
+    </section>
+
+    <!-- ═══ 〇三 本地物候 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇三</span>本地物候</h2>
+      <div class="phenology" id="phenologyBox"></div>
+    </section>
+
+    <section class="postscript" id="postscript" hidden>
+      <div class="ps-mark">跋</div>
+      <p id="psText"></p>
+      <div class="ps-seal">格物</div>
+    </section>
+
+    <div class="page-foot">格物志 · 卷上 终</div>
+    </div>
+
+    <div class="page page-r">
+
+    <!-- ═══ 〇四 诗词赏读 ═══ -->
+    <section id="secPoems">
+      <h2 class="sec"><span class="num">〇四</span>诗词赏读</h2>
+      <div class="poem-room">
+        <div class="analysis" id="poemAnalysis"></div>
+      </div>
+    </section>
+
+    <!-- ═══ 〇五 形态特征 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇五</span>形态特征</h2>
+      <div class="prose" id="morphologyProse"></div>
+    </section>
+
+    <!-- ═══ 〇六 地理分布与习性 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇六</span>地理分布与习性</h2>
+      <div class="prose" id="distributionProse"></div>
+    </section>
+
+    <!-- ═══ 〇七 花期年轮 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇七</span>花期年轮</h2>
+      <div class="ring-strip" id="ringStrip">
+        <div class="ring-months"><span>1月</span><span>2月</span><span>3月</span><span>4月</span><span>5月</span><span>6月</span><span>7月</span><span>8月</span><span>9月</span><span>10月</span><span>11月</span><span>12月</span></div>
+      </div>
+      <div class="ring-note" id="ringNote">移指其上，观一年之荣枯。</div>
+    </section>
+
+    <!-- ═══ 〇八 近亲折页 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇八</span>近亲植物</h2>
+      <div class="foldout" id="foldout">
+        <div class="fold-head" id="foldHead">
+          <span>同属近亲三品 · 夹页</span>
+          <span class="arrow">展开 ▸</span>
+        </div>
+        <div class="fold-body">
+          <div class="fold-inner">
+            <div class="fold-cols" id="foldCols"></div>
+            <table class="compare" id="compareTable"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 〇九 记忆口诀（题跋朱批） ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇九</span>记忆口诀</h2>
+      <div class="mnemonic" id="mnemonicBox"></div>
+    </section>
+
+    <!-- ═══ 〇十 文化意义与趣闻 ═══ -->
+    <section>
+      <h2 class="sec"><span class="num">〇十</span>文化意义与趣闻</h2>
+      <div class="asides" id="asidesList"></div>
+    </section>
+
+    <div class="page-foot">格物志 · 卷下 终</div>
+    </div>
+    </div>
+
+    <footer>
+      <span>每日一花 · 格物志 —— 认识身边的植物</span>
+      <span>数据来源：植物志 · 园林数据库 | 创意模板 A「格物」</span>
+    </footer>
+  </div>
+</main>
+
+<script>
+/* ═══════════════ 数据契约 ═══════════════
+   字段映射 SKILL.md 十二模块；替换此对象即可复用模板。 */
+const FLOWER = {
+  名: "紫薇",
+  拼音: "ziwei",
+  学名: "Lagerstroemia indica L.",
+  科: "千屈菜科",
+  属: "紫薇属",
+  别名: ["百日红","痒痒树","无皮树","满堂红"],
+  副题: "百日红的夏日浪漫",
+  编号: "第〇六一〇号",
+  印: "紫薇",
+  档案: [
+    ["学名","<i>Lagerstroemia indica</i> L."],
+    ["科属","千屈菜科 紫薇属"],
+    ["别名","百日红、痒痒树、无皮树、满堂红"],
+    ["类型","落叶灌木或小乔木，高 3–7 米"],
+    ["花期","6–9 月，盛花 7–8 月"],
+    ["原产","中国长江流域及以南"],
+    ["传播","18 世纪传入欧洲，今为世界名花"],
+    ["用途","园林观赏、药用、木材"],
+  ],
+  形态: [
+    {眉批:"树形", 文:"落叶灌木或小乔木，高可达 7 米；树冠常不甚整齐，枝干屈曲有致。"},
+    {眉批:"树皮", 文:"灰褐色，光滑如去皮——周皮逐年整层剥落，故老干亦莹润，俗呼\"无皮树\"。"},
+    {眉批:"叶", 文:"椭圆形，对生或近对生，长 3–7 厘米，全缘，叶柄短。"},
+    {眉批:"花", 文:"花径约 3–4 厘米；花瓣皱缩如绉纱，边缘作波状，有细长之爪，着生于萼筒喉部。"},
+    {眉批:"花序", 文:"顶生圆锥花序，花簇密集，远望如缀彩云。"},
+    {眉批:"果", 文:"蒴果球状，成熟后室背开裂；种子具翅。"},
+  ],
+  分布: [
+    ["原产","中国长江流域及以南地区，为中国传统名花之一。"],
+    ["今布","全国广泛栽培，江苏、浙江、安徽、湖北、四川、广东诸省尤为常见。"],
+    ["习性","喜温暖湿润，喜光稍耐阴；耐旱、耐寒（可耐 −10℃）、耐瘠薄。适生温度 15–30℃，喜肥沃疏松、排水良好之微酸性至中性土壤。"],
+    ["栽培","春季修剪整形，夏季保持水分，秋季施基肥；花后及时剪去残序，可促二次开花。"],
+  ],
+  花期轴: [
+    {月:1,  月止:3,  期:"1–3月", 事:"休眠期，叶片落尽，枝干裸露见骨。"},
+    {月:4,  月止:4,  期:"4月",   事:"新芽萌发，嫩叶初展。"},
+    {月:5,  月止:5,  期:"5月",   事:"花蕾形成，蓄势待放。"},
+    {月:6,  月止:9,  期:"6–9月", 事:"盛花期——\"百日红\"正名之时，7–8 月为最佳观赏期。", 主:true},
+    {月:10, 月止:11, 期:"10–11月",事:"花期尾声，蒴果渐熟。"},
+    {月:12, 月止:12, 期:"12月",  事:"叶落归根，复归休眠。"},
+  ],
+  诗词: [
+    {题:"紫薇花", 代:"唐", 人:"杜牧",
+     句:["晓迎秋露一枝新，","不占园中最上春。","桃李无言又何在，","向风偏笑艳阳人。"],
+     读:"杜牧曾任中书舍人，人称\"杜紫薇\"。当桃李早已凋零，紫薇却于秋露中绽放新枝——不争春色，自有风骨。\"向风偏笑\"四字，写尽其傲然之态。"},
+    {题:"紫薇花", 代:"唐", 人:"白居易",
+     句:["丝纶阁下文书静，","钟鼓楼中刻漏长。","独坐黄昏谁是伴，","紫薇花对紫微郎。"],
+     读:"唐代中书省曾易名\"紫微省\"，广植紫薇以应星象。白乐天值宿宫中，以花为伴——\"紫薇花对紫微郎\"，花与人、名与实，在此互为镜像。"},
+  ],
+  识别: [
+    {法:"看树皮", 述:"树干光滑如去皮，灰褐色；以手挠之，全树微颤——\"痒痒树\"由是得名。"},
+    {法:"观花瓣", 述:"花瓣边缘皱缩如绉纱，此为紫薇最独特之印记。"},
+    {法:"辨花序", 述:"顶生圆锥花序，花簇密集，远看似彩云驻枝。"},
+    {法:"查叶序", 述:"叶椭圆形，对生或近对生，全缘，先端短尖而不呈长尾。"},
+    {法:"看花色", 述:"常见绯红、紫红、白色，亦有复色品种；同株花色恒定。"},
+  ],
+  近亲: [
+    {名:"大花紫薇", 学名:"<i>Lagerstroemia speciosa</i>", 花色:"紫红至粉紫", 区别:"叶长 10–25 厘米（紫薇仅 3–7 厘米），花径可达 5–8 厘米，花瓣平展几乎不皱； tropical 常绿至半落叶，主产华南及南亚。"},
+    {名:"南紫薇", 学名:"<i>Lagerstroemia subcostata</i>", 花色:"白色，花小", 区别:"又名\"九芎\"，树皮光滑如涂蜡；花径仅约 1–2 厘米，花瓣白色，与紫薇之皱瓣绯红迥异。"},
+    {名:"尾叶紫薇", 学名:"<i>Lagerstroemia caudata</i>", 花色:"白至淡紫", 区别:"叶先端作长尾状渐尖（\"尾叶\"之名即由此来），紫薇叶先端仅短尖，无尾。"},
+  ],
+  口诀: ["紫薇千屈菜科，百日红名不虚传；","树皮光滑痒痒树，皱缩花瓣似绉纱；","六月盛夏正当时，百日不败花中仙。"],
+  趣闻: [
+    {题:"百日红", 文:"花期自夏徂秋长达百日，故得名\"百日红\"，是夏秋最持久的观赏花木。"},
+    {题:"痒痒树之谜", 文:"树干光滑无皮，轻挠其上部，全树竟微微抖动，如怕痒一般。一般认为是其木质致密、树冠重心高，振动传导效率极高所致。"},
+    {题:"紫微星象", 文:"古人以紫微星（北极星）为帝星，紫薇花与之同名相应，被视为\"帝王之花\"。唐代中书省一度改称\"紫微省\"，省中遍植紫薇。"},
+    {题:"杜紫薇", 文:"杜牧因官中书舍人、咏紫薇诗佳，得名\"杜紫薇\"——诗人与花互为别名，古今罕有。"},
+    {题:"市花", 文:"紫薇是徐州、襄阳、咸阳等市的市花，寓长寿与繁荣。"},
+    {题:"入药", 文:"树皮、叶、根皆可入药，民间称\"怕痒树\"之皮有清热解毒、活血止血之用（须遵医嘱）。"},
+  ],
+  跋: "是页图为写实，可携之野外对认。镜下深察诸注，皆紫薇属之要害；挠皮试颤，宜择光滑老干。他日见其花皱如绉纱、其皮滑如去皮，则虽隔庭一望，亦可呼其名矣。",
+  物候: {
+    地:"长江流域（以武汉为例）",
+    观:"六月初始花，七月大盛，至国庆前后犹有残花。庭前、街角、公园水畔皆有栽培，行道树亦多用之。",
+    提: [
+      "最佳观赏：7 月中旬 – 8 月下旬，清晨带露时花色最鲜。", 
+      "体验\"痒痒树\"：择光滑老干，以指节轻挠，静观枝叶微颤。",
+      "拾果：10 月后蒴果开裂，可拾作标本；种子具翅，翌年可播。",
+    ],
+  },
+};
+
+/* ═══════════════ 渲染 ═══════════════ */
+const $ = s => document.querySelector(s);
+(function render(){
+  /* 档案表 */
+  $("#archivesTable").innerHTML = FLOWER.档案.map(r => `<tr><th scope="row">${r[0]}</th><td>${r[1]}</td></tr>`).join("");
+
+  /* 形态：正文 + 眉批侧栏（两枚） */
+  const morph = FLOWER.形态;
+  $("#morphologyProse").innerHTML =
+    `<aside class="side-note">${morph[1].文}</aside>` +
+    morph.filter((_,i)=>i!==1).map(m=>`<p><b>${m.眉批}</b>　${m.文}</p>`).join("");
+
+  /* 分布 */
+  $("#distributionProse").innerHTML = FLOWER.分布.map(r=>`<p><b>${r[0]}</b>　${r[1]}</p>`).join("");
+
+  /* 诗词（竖排 + 逐字显影） */
+  const room = $("#poemRoom") || document.querySelector(".poem-room");
+  FLOWER.诗词.forEach((p,i)=>{
+    const div = document.createElement("div");
+    div.className = "poem";
+    div.innerHTML =
+      `<div class="p-title ink">${p.题}</div>` +
+      `<div class="p-lines">${p.句.map(l=>
+        `<span class="ln">${Array.from(l).map(ch=>`<i class="ink">${ch}</i>`).join("")}</span>`
+      ).join("")}</div>` +
+      `<div class="p-author ink">${p.代} · ${p.人}</div>`;
+    room.appendChild(div);
+  });
+  const an = document.createElement("div");
+  an.className = "analysis";
+  an.innerHTML = FLOWER.诗词.map(p=>`<p style="margin-bottom:14px"><span class="lbl">${p.代} · ${p.人}《${p.题}》</span>${p.读}</p>`).join("");
+  room.appendChild(an);
+
+  /* 花期年轮：12 个月标尺 */
+  const strip = $("#ringStrip");
+  FLOWER.花期轴.forEach(ph=>{
+    if(ph.主){
+      const band = document.createElement("div");
+      band.className = "ring-band";
+      band.style.left  = ((ph.月-1)/12*100) + "%";
+      band.style.width = ((ph.月止-ph.月+1)/12*100) + "%";
+      band.innerHTML = `<em>百日红</em>`;
+      strip.appendChild(band);
+    }
+    const dot = document.createElement("button");
+    dot.className = "ring-dot";
+    dot.style.left = ((ph.月-1 + (ph.月止-ph.月)/2)/12*100) + "%";
+    dot.setAttribute("aria-label", ph.期 + " " + ph.事);
+    dot.addEventListener("mouseenter", ()=>showRing(ph));
+    dot.addEventListener("focus", ()=>showRing(ph));
+    dot.addEventListener("click", ()=>showRing(ph));
+    strip.appendChild(dot);
+  });
+  function showRing(ph){
+    $("#ringNote").innerHTML = `<b>${ph.期}</b>${ph.事}`;
+  }
+
+  /* 识别要点 */
+  $("#recognizeList").innerHTML = FLOWER.识别.map(r=>`<li><span><b>${r.法}：</b>${r.述}</span></li>`).join("");
+
+  /* 近亲折页 */
+  $("#foldCols").innerHTML = FLOWER.近亲.map(r=>
+    `<div><span class="rel-name">${r.名}</span><span class="rel-latin">${r.学名.replace(/<\/?i>/g,"")}</span>
+     <p><b style="color:var(--cinnabar);font-family:var(--kai);font-weight:400">花色</b>　${r.花色}</p>
+     <p style="margin-top:6px"><b style="color:var(--cinnabar);font-family:var(--kai);font-weight:400">之别</b>　${r.区别}</p></div>`).join("");
+  $("#compareTable").innerHTML =
+    `<thead><tr><th style="width:5.5em">名称</th><th>学名</th><th style="width:7em">花色</th><th>与主花卉之差异</th></tr></thead>` +
+    `<tbody>` + FLOWER.近亲.map(r=>`<tr><td>${r.名}</td><td>${r.学名}</td><td>${r.花色}</td><td>${r.区别}</td></tr>`).join("") + `</tbody>`;
+  $("#foldHead").addEventListener("click", ()=>{
+    const fo = $("#foldout");
+    fo.classList.toggle("open");
+    fo.querySelector(".arrow").textContent = fo.classList.contains("open") ? "收起 ▴" : "展开 ▸";
+  });
+
+  /* 跋 */
+  if(FLOWER.跋){ document.getElementById("postscript").hidden = false; document.getElementById("psText").textContent = FLOWER.跋; }
+
+  /* 口诀 / 趣闻 / 物候 */
+  $("#mnemonicBox").innerHTML = FLOWER.口诀.join("<br>");
+  $("#asidesList").innerHTML = FLOWER.趣闻.map(f=>`<div class="aside"><span class="mark">按</span><span><b>${f.题}</b>${f.文}</span></div>`).join("");
+  $("#phenologyBox").innerHTML =
+    `<div class="ph-loc">${FLOWER.物候.地}</div><p>${FLOWER.物候.观}</p><ul>${FLOWER.物候.提.map(t=>`<li>${t}</li>`).join("")}</ul>`;
+})();
+
+/* ═══════════════ 墨迹显影 ═══════════════ */
+(function inkReveal(){
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const chars = e.target.querySelectorAll(".ink");
+        chars.forEach((c,i)=> c.style.transitionDelay = (i*55)+"ms");
+        e.target.classList.add("inked");
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:.35});
+  document.querySelectorAll(".poem").forEach(p=>io.observe(p));
+})();
+
+/* ═══════════════ 放大镜（细察） ═══════════════ */
+(function loupe(){
+  const box = $("#plateBox"), svg = $("#plateSvg");
+  const loupe = $("#loupe"), inner = $("#loupeInner"), note = $("#deepNote");
+  if(!box || !svg || !loupe) return;
+  const Z = 2.2, R = 95;   // 放大倍率 / 镜半径
+  // 克隆 SVG 进镜筒（保留 defs 内 id，令 <use> 引用仍指向原图元；仅剥离 defs 外的重复 id）
+  const clone = svg.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.querySelectorAll("[id]").forEach(n=>{ if(!n.closest("defs")) n.removeAttribute("id"); });
+  clone.style.width  = (680*Z)+"px";
+  clone.style.height = (500*Z)+"px";
+  inner.appendChild(clone);
+
+  let active = false;
+  function svgPoint(ev){
+    const r = svg.getBoundingClientRect();
+    return { x:(ev.clientX - r.left)/r.width*680, y:(ev.clientY - r.top)/r.height*500,
+             inside: ev.clientX>=r.left && ev.clientX<=r.right && ev.clientY>=r.top && ev.clientY<=r.bottom };
+  }
+  function move(ev){
+    const p = svgPoint(ev);
+    if(!p.inside){ hide(); return; }
+    const br = box.getBoundingClientRect();
+    loupe.style.left = (ev.clientX - br.left - R) + "px";
+    loupe.style.top  = (ev.clientY - br.top  - R) + "px";
+    inner.style.transform = `translate(${-(p.x*Z - R)}px, ${-(p.y*Z - R)}px)`;
+    // 深察热区
+    let hit = null;
+    svg.querySelectorAll(".deep-hot").forEach(h=>{
+      const cx = +h.getAttribute("cx"), cy = +h.getAttribute("cy"), r = +h.getAttribute("r");
+      if((p.x-cx)**2 + (p.y-cy)**2 <= r*r) hit = h;
+    });
+    if(hit){
+      note.textContent = hit.dataset.note;
+      note.style.left = Math.min(ev.clientX - br.left + 18, br.width - 250) + "px";
+      note.style.top  = Math.max(ev.clientY - br.top - 66, 8) + "px";
+      note.classList.add("show");
+    } else note.classList.remove("show");
+  }
+  function hide(){ loupe.classList.remove("on"); note.classList.remove("show"); box.classList.remove("louping"); active=false; }
+  function start(ev){
+    if(ev.target.closest("#tickleZone")) return;   // 挠痒热区不放大
+    active = true; box.classList.add("louping");
+    loupe.classList.add("on"); move(ev);
+    ev.preventDefault();
+  }
+  box.addEventListener("pointerdown", start);
+  window.addEventListener("pointermove", ev=>{ if(active) move(ev); });
+  window.addEventListener("pointerup", hide);
+  window.addEventListener("pointercancel", hide);
+})();
+
+/* ═══════════════ 痒痒树（以指轻挠） ═══════════════ */
+(function tickle(){
+  const zone = $("#tickleZone"), svg = $("#plateSvg"), tree = $("#plateTree");
+  if(!zone || !tree) return;
+  const box = $("#plateBox"), note = $("#deepNote");
+  let energy = 0, last = null, hinted = false, petalN = 0;
+
+  zone.addEventListener("pointerdown", ev=>{ last = ev.clientX; ev.preventDefault(); });
+  zone.addEventListener("pointermove", ev=>{
+    if(ev.buttons === 0 && ev.pointerType === "mouse") return;
+    if(last !== null){
+      energy = Math.min(energy + Math.abs(ev.clientX - last)*.045, 1.6);
+      last = ev.clientX;
+      if(!hinted && energy > .7){
+        hinted = true;
+        const br = box.getBoundingClientRect();
+        note.textContent = "枝叶俱颤——树干传导振动之效极捷，故名\"痒痒树\"。";
+        note.style.left = "8px"; note.style.top = "8px";
+        note.classList.add("show");
+        setTimeout(()=>note.classList.remove("show"), 4200);
+      }
+      if(energy > .9 && petalN < 6 && Math.random() < .3) dropPetal();
+    }
+  });
+  window.addEventListener("pointerup", ()=> last = null);
+
+  const g = tree.ownerSVGElement ? tree : tree;  // 树组
+  let t0 = performance.now();
+  (function frame(now){
+    const t = (now - t0)/1000;
+    if(energy > .002){
+      const ang = Math.sin(t*26)*energy*2.6;   // 度
+      tree.setAttribute("transform", `rotate(${ang.toFixed(2)} 470 470)`);
+      energy *= .93;
+    } else if(tree.hasAttribute("transform")){
+      tree.removeAttribute("transform");
+    }
+    requestAnimationFrame(frame);
+  })(t0);
+
+  function dropPetal(){
+    const svgNS = "http://www.w3.org/2000/svg";
+    const src = svg.querySelector("#bloomMain use");
+    if(!src) return;
+    const p = document.createElementNS(svgNS,"path");
+    p.setAttribute("d","M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z");
+    p.setAttribute("fill", Math.random()<.5 ? "#b34a75" : "#c2618a");
+    p.setAttribute("opacity",".9");
+    const x = 520 + Math.random()*140, y = 60 + Math.random()*90;
+    p.setAttribute("transform", `translate(${x} ${y}) scale(.8)`);
+    svg.appendChild(p);
+    petalN++;
+    const dur = 1600 + Math.random()*1200, t0 = performance.now();
+    (function fall(now){
+      const k = (now - t0)/dur;
+      if(k >= 1){ p.remove(); petalN--; return; }
+      p.setAttribute("transform", `translate(${x + Math.sin(k*7)*22} ${y + k*330}) rotate(${k*220}) scale(${.8*(1-k*.3)})`);
+      p.setAttribute("opacity", (.9*(1-k)).toFixed(2));
+      requestAnimationFrame(fall);
+    })(t0);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日一花 · 花期剧场 —— 紫薇</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  每日一花 · 创意模板 B 「花期」物候剧场
+  ───────────────────────────────────────────────────────────────
+  核心概念：花是物候的钟。认识一种花 = 陪它过完一年。
+  页面是一座小剧场：唯一的主角是那棵树，唯一的导演是时间。
+  底部 24 节气日晷是唯一导航——拖动太阳，树随节气开落，
+  天色、地色、观察笔记与应季诗句整体呼吸。
+
+  数据契约：幕后册页内容渲染自 FLOWER 对象（映射 SKILL.md 十二模块）；
+  TERMS 为本模板特有的「节气物候」数组（24 项，含树的状态参数
+  leaf/bud/bloom、天色 sky、地色 ground、观察语、可为、应季诗）。
+  复用方法：替换 FLOWER 与 TERMS 即可生成新花卉的一年。
+  插图 SVG（id=scene）由 Skill 按花卉重绘，保留 viewBox="0 0 680 500"，
+  并保留 .fol（叶簇组）、.blm（花簇组）、.bud（芽簇组）、#skyTop/#skyBot/#ground
+  等挂点；若缺失，剧场将静默降级为纯文字版物候（幕后册页自动兜底全部档案内容）。
+
+  运行方式：双击本文件直接在浏览器打开（file://，无任何外部依赖）。
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --paper:#f5f1e4;
+    --ink:#33301f;
+    --ink-soft:#6b6550;
+    --ink-faint:#97907a;
+    --rule:#c9c0a4;
+    --cinnabar:#a04326;
+    --crimson:#94496b;
+    --crimson-deep:#713653;
+    --kai:"Kaiti SC","STKaiti","KaiTi","DFKai-SB",serif;
+    --song:"Songti SC","STSong","NSimSun","SimSun","Noto Serif SC",serif;
+    --latin:Georgia,"Times New Roman",serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--song);color:var(--ink);line-height:1.9;
+    background:var(--paper);
+    min-height:100vh;
+  }
+  ::selection{background:rgba(148,73,107,.22)}
+
+  /* ── 顶栏 ─────────────────────────────── */
+  .top{
+    display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;
+    max-width:1120px;margin:0 auto;padding:26px 22px 6px;
+  }
+  .top .brand{font-family:var(--kai);letter-spacing:.3em;font-size:15px;color:var(--ink-soft)}
+  .top .brand b{color:var(--crimson-deep);font-weight:400}
+  .top .who{font-size:12px;color:var(--ink-faint);letter-spacing:.12em}
+  .top .who i{font-family:var(--latin)}
+
+  /* ── 剧场 ─────────────────────────────── */
+  .theater{max-width:1120px;margin:0 auto;padding:10px 22px 0}
+  .stage{
+    position:relative;margin:0 auto;
+    width:min(100%,calc((100svh - 300px)*1.36));
+    min-width:min(100%,560px);
+    aspect-ratio:680/500;
+    border:1px solid rgba(80,66,40,.35);
+    box-shadow:0 20px 60px -18px rgba(60,50,25,.35);
+    overflow:hidden;
+  }
+  .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* 观察手记卡 */
+  .note-card{
+    position:absolute;left:20px;bottom:20px;width:min(340px,62%);
+    background:rgba(247,243,230,.94);
+    border:1px solid rgba(105,92,60,.4);
+    box-shadow:0 10px 30px -10px rgba(50,40,15,.4);
+    padding:16px 18px 14px;z-index:3;
+  }
+  .note-card::before{
+    content:"物候手记";position:absolute;top:-10px;left:14px;
+    font-family:var(--kai);font-size:11px;letter-spacing:.4em;text-indent:.4em;
+    color:var(--cinnabar);background:#f7f3e6;padding:0 8px;
+  }
+  .nc-term{display:flex;align-items:baseline;gap:10px}
+  .nc-term .t-name{font-family:var(--kai);font-size:26px;letter-spacing:.2em;color:var(--ink)}
+  .nc-term .t-date{font-size:11.5px;color:var(--ink-faint);letter-spacing:.06em}
+  .nc-observe{font-size:13px;color:var(--ink-soft);margin-top:8px;text-align:justify}
+  .nc-do{font-size:12.5px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--rule)}
+  .nc-do b{font-family:var(--kai);font-weight:400;color:var(--cinnabar);letter-spacing:.2em;margin-right:8px}
+  .nc-poem{
+    margin-top:10px;padding:10px 12px;border-left:2px solid var(--crimson);
+    background:rgba(148,73,107,.06);
+    opacity:0;transform:translateY(6px);transition:opacity .8s,transform .8s;
+    font-family:var(--kai);
+  }
+  .nc-poem.show{opacity:1;transform:none}
+  .nc-poem .pl{font-size:13.5px;letter-spacing:.12em;line-height:2}
+  .nc-poem .pa{font-size:11px;color:var(--ink-faint);text-align:right;letter-spacing:.1em;margin-top:2px}
+
+  /* 日晷控制 */
+  .sundial{
+    max-width:860px;margin:18px auto 0;padding:0 22px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .dial-track{
+    position:relative;height:64px;user-select:none;touch-action:none;cursor:pointer;
+  }
+  .dial-rail{position:absolute;left:0;right:0;top:30px;height:2px;background:var(--rule)}
+  .dial-ticks{position:absolute;inset:0}
+  .dial-tick{
+    position:absolute;top:22px;width:1px;height:18px;background:var(--rule);
+    transform:translateX(-.5px);
+  }
+  .dial-tick.major{top:18px;height:26px;background:#a89e7e}
+  .dial-tick .t-label{
+    position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+    font-family:var(--kai);font-size:11px;letter-spacing:.08em;color:var(--ink-faint);
+    white-space:nowrap;transition:color .3s;
+  }
+  .dial-tick .t-label.duo{color:#b3aa8c}
+  .dial-tick.cur .t-label{color:var(--cinnabar);font-size:13px}
+  .dial-sun{
+    position:absolute;top:31px;width:26px;height:26px;border-radius:50%;
+    transform:translate(-50%,-50%);cursor:grab;
+    background:radial-gradient(circle at 38% 35%,#f6e3a8,#e5b95c 62%,#c98f36);
+    box-shadow:0 0 0 4px rgba(229,185,92,.25),0 2px 8px rgba(150,110,40,.4);
+    z-index:2;
+  }
+  .dial-sun:active{cursor:grabbing}
+  .dial-ui{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+  .dial-btn{
+    font-family:var(--kai);font-size:13px;letter-spacing:.25em;text-indent:.25em;
+    background:none;border:1px solid var(--rule);color:var(--ink-soft);
+    padding:6px 16px;cursor:pointer;transition:.25s;
+  }
+  .dial-btn:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .dial-hint{font-size:11px;color:var(--ink-faint);letter-spacing:.1em}
+  .dial-progress{font-size:11px;color:var(--ink-faint);letter-spacing:.15em}
+
+  /* ── 幕后册页（滑入覆盖层） ─────────────── */
+  .scrim{
+    position:fixed;inset:0;background:rgba(45,40,24,.4);z-index:39;
+    opacity:0;pointer-events:none;transition:opacity .45s;
+  }
+  .scrim.on{opacity:1;pointer-events:auto}
+  .backstage{
+    position:fixed;top:0;right:0;bottom:0;width:min(600px,94vw);z-index:40;
+    background:var(--paper);
+    box-shadow:-24px 0 70px rgba(30,24,8,.35);
+    transform:translateX(105%);transition:transform .55s cubic-bezier(.7,0,.2,1);
+    overflow-y:auto;padding:34px 38px 60px;
+  }
+  .backstage.on{transform:none}
+  .bs-head{text-align:center;position:relative;margin-bottom:10px}
+  .bs-head .ph-mark{font-size:11px;letter-spacing:.6em;text-indent:.6em;color:var(--ink-faint)}
+  .bs-head h2{font-family:var(--kai);font-weight:400;font-size:25px;letter-spacing:.3em;text-indent:.3em;margin-top:6px}
+  .bs-head .ph-sub{font-size:12px;color:var(--ink-faint);letter-spacing:.15em;margin-top:4px}
+  .bs-head .ph-sub i{font-family:var(--latin)}
+  .bs-close{
+    position:absolute;top:0;right:0;font-family:var(--kai);font-size:12px;
+    letter-spacing:.15em;background:none;border:1px solid var(--rule);color:var(--ink-soft);
+    padding:6px 12px;cursor:pointer;transition:.25s;
+  }
+  .bs-close:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .pg-sec{margin-top:40px}
+  .pg-sec h3{
+    font-family:var(--kai);font-weight:400;font-size:17px;letter-spacing:.3em;
+    display:flex;align-items:baseline;gap:12px;margin-bottom:14px;
+  }
+  .pg-sec h3 .sn{font-size:11px;color:var(--cinnabar);border:1px solid rgba(160,67,38,.4);padding:1px 7px;letter-spacing:.15em;white-space:nowrap;transform:translateY(-2px)}
+  .pg-sec h3::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+  table.arch{width:100%;border-collapse:collapse;font-size:13.5px;border-top:2px solid var(--ink-soft);border-bottom:2px solid var(--ink-soft)}
+  table.arch th{font-family:var(--kai);font-weight:400;text-align:left;width:6.5em;padding:9px 12px 9px 2px;color:var(--cinnabar);letter-spacing:.3em;border-bottom:1px solid var(--rule);vertical-align:top}
+  table.arch td{padding:9px 2px;border-bottom:1px solid var(--rule);vertical-align:top}
+  table.arch tr:last-child th,table.arch tr:last-child td{border-bottom:none}
+  table.arch i{font-family:var(--latin)}
+
+  .twocol{columns:2;column-gap:44px;column-rule:1px solid var(--rule);font-size:13.5px}
+  .twocol p{break-inside:avoid;margin-bottom:10px;text-align:justify}
+  .twocol b{font-family:var(--kai);font-weight:400;color:var(--crimson-deep);letter-spacing:.1em}
+
+  .kin{display:flex;gap:1px;border:1px solid var(--rule);background:var(--rule);margin-bottom:1px}
+  .kin>div{flex:1;background:var(--paper);padding:14px 16px;font-size:12.5px}
+  .kin .kn{font-family:var(--kai);font-size:16px;letter-spacing:.15em;color:var(--crimson-deep)}
+  .kin .kl{font-family:var(--latin);font-style:italic;font-size:11px;color:var(--ink-faint);display:block;margin:2px 0 8px}
+  .kin p{color:var(--ink-soft);line-height:1.85}
+  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.cmp th{font-family:var(--kai);font-weight:400;background:var(--ink-soft);color:var(--paper);padding:7px 10px;text-align:left;letter-spacing:.15em}
+  table.cmp td{padding:7px 10px;border:1px solid var(--rule);vertical-align:top;color:var(--ink-soft)}
+  table.cmp td:first-child{font-family:var(--kai);color:var(--ink);white-space:nowrap}
+  table.cmp i{font-family:var(--latin)}
+
+  .mnem{font-family:var(--kai);font-size:16.5px;letter-spacing:.2em;line-height:2.5;color:var(--cinnabar);text-align:center;padding:22px 0 16px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .recog{list-style:none;font-size:13.5px}
+  .recog li{display:flex;gap:12px;padding:8px 0;border-bottom:1px dashed var(--rule);align-items:baseline}
+  .recog li:last-child{border-bottom:none}
+  .recog li::before{content:"▸";color:var(--cinnabar);font-size:11px}
+  .recog b{font-family:var(--kai);font-weight:400;letter-spacing:.08em}
+
+  .pheno{border:1px solid var(--rule);padding:16px 20px;font-size:13px;color:var(--ink-soft)}
+  .pheno .loc{font-family:var(--kai);letter-spacing:.2em;color:var(--crimson-deep);margin-bottom:6px}
+  .pheno ul{list-style:none;margin-top:6px}
+  .pheno li{padding:2px 0}
+  .pheno li::before{content:"◦ ";color:var(--cinnabar)}
+
+  .prog-foot{margin-top:56px;text-align:center;font-size:11px;color:var(--ink-faint);letter-spacing:.2em}
+
+  /* 花瓣粒子 */
+  .petal{position:absolute;pointer-events:none;z-index:2}
+
+  /* ── 窄屏 ─────────────────────────────── */
+  @media (max-width:720px){
+    .theater{padding:6px 10px 0}
+    .stage{width:100%;min-width:0;aspect-ratio:680/500}
+    .note-card{left:8px;right:8px;bottom:8px;width:auto;max-height:52%;overflow-y:auto;padding:10px 12px 8px}
+    .nc-observe{font-size:12px;margin-top:6px}
+    .nc-do{font-size:11.5px;margin-top:6px;padding-top:6px}
+    .nc-poem{font-size:12px;padding:8px 10px;margin-top:8px}
+    .nc-poem .pl{font-size:12px;line-height:1.9}
+    .nc-term .t-name{font-size:20px}
+    .dial-tick .t-label{font-size:9px;top:-18px}
+    .dial-tick.cur .t-label{font-size:11px}
+    .twocol{columns:1}
+    .kin{flex-direction:column}
+    .top{padding:18px 12px 4px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">每日一花 · <b>花期剧场</b></div>
+  <div class="who">紫薇 <i>Lagerstroemia indica</i> · 陪它过完一年</div>
+</div>
+
+<div class="theater">
+  <div class="stage" id="stage">
+    <svg id="scene" viewBox="0 0 680 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="紫薇物候剧场：一棵随节气开落的紫薇树">
+      <defs>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+          <stop id="skyTop" offset="0" stop-color="#d7edda"/>
+          <stop id="skyBot" offset="1" stop-color="#eef3df"/>
+        </linearGradient>
+        <path id="leafB" d="M0 0 C 7 -13, 24 -20, 37 -15 C 44 -12, 43 -3, 33 2 C 19 9, 5 6, 0 0 Z"/>
+        <g id="petalB">
+          <path d="M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q -3 -29.5 -1.6 -25.5 Q 0 -30.5 1.6 -25.5 Q 3 -29.5 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z"/>
+        </g>
+        <g id="flowerB">
+          <use href="#petalB" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+          <use href="#petalB" transform="rotate(60)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+          <use href="#petalB" transform="rotate(120)" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+          <use href="#petalB" transform="rotate(180)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+          <use href="#petalB" transform="rotate(240)" fill="#b34a75" stroke="#7c3054" stroke-width=".5"/>
+          <use href="#petalB" transform="rotate(300)" fill="#c2618a" stroke="#7c3054" stroke-width=".5"/>
+          <circle r="4" fill="#e3c25f" stroke="#a8842f" stroke-width=".5"/>
+        </g>
+        <g id="budB">
+          <ellipse rx="4" ry="6.6" cy="-1" fill="#a63b5c" stroke="#6e2440" stroke-width=".5"/>
+          <path d="M0 5 L0 9" stroke="#5f7a45" stroke-width="1"/>
+        </g>
+      </defs>
+
+      <rect width="680" height="500" fill="url(#skyG)"/>
+      <rect id="ground" y="428" width="680" height="72" fill="#97b47a"/>
+      <path id="groundEdge" d="M0 428 L680 428" stroke="#7d9a60" stroke-width="2" opacity=".5"/>
+
+      <!-- 树（干瘦、冠丰、垂枝） -->
+      <g id="tree">
+        <!-- 干（光滑） -->
+        <path d="M326 442 C 328 404, 326 364, 329 324 C 331 298, 333 282, 335 270 L 351 270 C 353 284, 356 302, 359 328 C 362 366, 362 406, 363 442 Z"
+              fill="#8a7256" stroke="#5f4c36" stroke-width="1"/>
+        <path d="M336 300 C 335 340, 334 390, 335 434" stroke="#a8946e" stroke-width="1.2" fill="none" opacity=".7"/>
+        <!-- 枝 -->
+        <g fill="#8a7256" stroke="#5f4c36" stroke-width="1">
+          <path d="M335 270 C 321 240, 301 212, 275 192 C 257 178, 237 168, 219 162 L 225 150 C 247 156, 269 168, 289 186 C 311 206, 327 234, 337 262 Z"/>
+          <path d="M351 270 C 361 242, 377 218, 399 200 C 415 188, 433 178, 449 174 L 445 162 C 425 166, 403 178, 385 196 C 363 218, 347 246, 341 264 Z"/>
+          <path d="M341 278 C 339 248, 337 218, 331 194 C 327 180, 321 166, 315 156 L 327 150 C 335 162, 341 176, 345 192 C 351 216, 353 248, 353 274 Z"/>
+          <path d="M251 160 C 239 148, 229 132, 225 114 L 237 110 C 241 126, 249 140, 259 152 Z"/>
+          <path d="M447 170 C 457 160, 465 146, 469 130 L 481 134 C 477 150, 467 166, 457 174 Z"/>
+          <path d="M301 238 C 287 250, 269 258, 249 260 L 249 250 C 265 248, 279 242, 291 232 Z"/>
+          <path d="M391 234 C 403 246, 419 254, 437 256 L 435 266 C 419 264, 403 256, 391 246 Z"/>
+        </g>
+
+        <!-- 叶簇（内→外排序，春由内向外展开） -->
+        <g id="foliage" fill="#5b7246" stroke="#41552f" stroke-width=".7">
+          <g class="fol" transform="translate(332 260)"><use href="#leafB" transform="rotate(-30)"/><use href="#leafB" transform="rotate(150) scale(.9)"/><use href="#leafB" transform="translate(8 -6) rotate(-70) scale(.8)"/></g>
+          <g class="fol" transform="translate(304 216)"><use href="#leafB" transform="rotate(-40)"/><use href="#leafB" transform="translate(6 4) rotate(140) scale(.85)"/></g>
+          <g class="fol" transform="translate(384 218)"><use href="#leafB" transform="rotate(30)"/><use href="#leafB" transform="translate(-6 2) rotate(200) scale(.85)"/></g>
+          <g class="fol" transform="translate(338 192)"><use href="#leafB" transform="rotate(-80) scale(.9)"/><use href="#leafB" transform="translate(10 4) rotate(-20) scale(.8)"/></g>
+          <g class="fol" transform="translate(258 174)"><use href="#leafB" transform="rotate(-30)"/><use href="#leafB" transform="rotate(150) scale(.85)"/><use href="#leafB" transform="translate(10 -2) rotate(-60) scale(.7)"/></g>
+          <g class="fol" transform="translate(418 184)"><use href="#leafB" transform="rotate(36)"/><use href="#leafB" transform="translate(-8 4) rotate(210) scale(.8)"/></g>
+          <g class="fol" transform="translate(228 140)"><use href="#leafB" transform="rotate(-46) scale(.9)"/><use href="#leafB" transform="translate(8 6) rotate(130) scale(.75)"/></g>
+          <g class="fol" transform="translate(450 146)"><use href="#leafB" transform="rotate(20) scale(.95)"/><use href="#leafB" transform="translate(-10 2) rotate(160) scale(.8)"/></g>
+          <g class="fol" transform="translate(286 144)"><use href="#leafB" transform="rotate(-64) scale(.85)"/><use href="#leafB" transform="translate(12 8) rotate(-8) scale(.7)"/></g>
+          <g class="fol" transform="translate(396 132)"><use href="#leafB" transform="rotate(-14) scale(.85)"/><use href="#leafB" transform="translate(-12 8) rotate(190) scale(.7)"/></g>
+          <g class="fol" transform="translate(238 108)"><use href="#leafB" transform="rotate(-38) scale(.75)"/></g>
+          <g class="fol" transform="translate(468 108)"><use href="#leafB" transform="rotate(26) scale(.75)"/></g>
+          <g class="fol" transform="translate(202 176)"><use href="#leafB" transform="rotate(-18) scale(.7)"/></g>
+          <g class="fol" transform="translate(498 178)"><use href="#leafB" transform="rotate(18) scale(.7)"/></g>
+          <g class="fol" transform="translate(256 254)"><use href="#leafB" transform="rotate(-64) scale(.7)"/></g>
+          <g class="fol" transform="translate(432 258)"><use href="#leafB" transform="rotate(60) scale(.7)"/></g>
+        </g>
+
+        <!-- 芽簇 -->
+        <g id="buds" fill="#a63b5c">
+          <g class="bud" transform="translate(320 250)"><use href="#budB"/><use href="#budB" transform="translate(10 -8) scale(.8)"/></g>
+          <g class="bud" transform="translate(372 240)"><use href="#budB" transform="rotate(14)"/><use href="#budB" transform="translate(-8 -10) scale(.75)"/></g>
+          <g class="bud" transform="translate(262 150)"><use href="#budB" transform="rotate(-10) scale(.85)"/></g>
+          <g class="bud" transform="translate(430 152)"><use href="#budB" transform="rotate(18) scale(.85)"/></g>
+          <g class="bud" transform="translate(336 148)"><use href="#budB" transform="scale(.9)"/></g>
+        </g>
+
+        <!-- 花簇（内→外） -->
+        <g id="blooms">
+          <g class="blm" transform="translate(322 236)"><use href="#flowerB" transform="scale(1.05)"/><use href="#flowerB" transform="translate(14 6) rotate(20) scale(.8)"/></g>
+          <g class="blm" transform="translate(368 226)"><use href="#flowerB" transform="rotate(10) scale(1)"/><use href="#flowerB" transform="translate(-14 4) rotate(-24) scale(.8)"/></g>
+          <g class="blm" transform="translate(344 180)"><use href="#flowerB" transform="scale(.95)"/><use href="#flowerB" transform="translate(16 -2) rotate(30) scale(.75)"/></g>
+          <g class="blm" transform="translate(262 150)"><use href="#flowerB" transform="scale(.9)"/><use href="#flowerB" transform="translate(14 8) rotate(16) scale(.7)"/></g>
+          <g class="blm" transform="translate(424 158)"><use href="#flowerB" transform="rotate(14) scale(.9)"/><use href="#flowerB" transform="translate(-12 10) rotate(-18) scale(.7)"/></g>
+          <g class="blm" transform="translate(234 104)"><use href="#flowerB" transform="scale(.8)"/></g>
+          <g class="blm" transform="translate(464 108)"><use href="#flowerB" transform="rotate(-12) scale(.8)"/></g>
+        </g>
+      </g>
+
+      <!-- 飞花 / 落雪层 -->
+      <g id="particles"></g>
+    </svg>
+
+    <div class="note-card" id="noteCard">
+      <div class="nc-term"><span class="t-name" id="ncName">—</span><span class="t-date" id="ncDate"></span></div>
+      <p class="nc-observe" id="ncObserve"></p>
+      <p class="nc-do" id="ncDo"></p>
+      <div class="nc-poem" id="ncPoem">
+        <div class="pl" id="ncPoemLines"></div>
+        <div class="pa" id="ncPoemAuthor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日晷 -->
+  <div class="sundial">
+    <div class="dial-track" id="dialTrack" role="slider" tabindex="0" aria-label="节气日晷：拖动太阳以改变时节"
+         aria-valuemin="1" aria-valuemax="24" aria-valuenow="1" aria-valuetext="立春">
+      <div class="dial-rail"></div>
+      <div class="dial-ticks" id="dialTicks"></div>
+      <div class="dial-sun" id="dialSun"></div>
+    </div>
+    <div class="dial-ui">
+      <button class="dial-btn" id="btnPrev">‹ 前一节气</button>
+      <button class="dial-btn" id="btnPlay">转一年</button>
+      <button class="dial-btn" id="btnToday">回到今日</button>
+      <button class="dial-btn" id="btnNext">后一节气 ›</button>
+      <button class="dial-btn" id="btnBackstage">幕后册页</button>
+      <span class="dial-progress" id="dialProgress"></span>
+    </div>
+    <div class="dial-hint" style="text-align:center">拖动太阳 · 滚轮微调 · 方向键左右 · 「转一年」自动巡游</div>
+  </div>
+</div>
+
+<!-- ═══ 幕后册页（滑入覆盖层） ═══ -->
+<div class="scrim" id="scrim"></div>
+<aside class="backstage" id="backstage" aria-hidden="true">
+  <div class="bs-head">
+    <div class="ph-mark">每日一花 · 花期剧场</div>
+    <h2>幕 后 册 页</h2>
+    <div class="ph-sub">紫薇 <i>Lagerstroemia indica L.</i> · 千屈菜科 紫薇属</div>
+    <button class="bs-close" id="btnCloseBackstage">合上 ✕</button>
+  </div>
+
+  <section class="pg-sec"><h3><span class="sn">第一折</span>植物档案</h3><table class="arch" id="pgArch"></table></section>
+  <section class="pg-sec"><h3><span class="sn">第二折</span>形态特征</h3><div class="twocol" id="pgMorph"></div></section>
+  <section class="pg-sec"><h3><span class="sn">第三折</span>地理分布与习性</h3><div class="twocol" id="pgDist"></div></section>
+  <section class="pg-sec"><h3><span class="sn">第四折</span>近亲植物</h3><div class="kin" id="pgKin"></div><table class="cmp" id="pgCmp"></table></section>
+  <section class="pg-sec"><h3><span class="sn">第五折</span>野外识别要点</h3><ul class="recog" id="pgRecog"></ul></section>
+  <section class="pg-sec"><h3><span class="sn">第六折</span>记忆口诀</h3><div class="mnem" id="pgMnem"></div></section>
+  <section class="pg-sec"><h3><span class="sn">第七折</span>文化意义与趣闻</h3><div class="twocol" id="pgFacts"></div></section>
+  <section class="pg-sec"><h3><span class="sn">第八折</span>本地物候</h3><div class="pheno" id="pgPheno"></div></section>
+
+  <div class="prog-foot">每日一花 · 花期剧场 —— 认识一种花，陪它过完一年 | 创意模板 B「花期」</div>
+</aside>
+
+<script>
+/* ═══════════════ 数据契约 ═══════════════ */
+const FLOWER = {
+  名: "紫薇",
+  学名: "Lagerstroemia indica L.",
+  科: "千屈菜科", 属: "紫薇属",
+  档案: [
+    ["学名","<i>Lagerstroemia indica</i> L."],
+    ["科属","千屈菜科 紫薇属"],
+    ["别名","百日红、痒痒树、无皮树、满堂红"],
+    ["类型","落叶灌木或小乔木，高 3–7 米"],
+    ["花期","6–9 月，盛花 7–8 月"],
+    ["原产","中国长江流域及以南"],
+    ["传播","18 世纪传入欧洲，今为世界名花"],
+    ["用途","园林观赏、药用、木材"],
+  ],
+  形态: [
+    ["树形","落叶灌木或小乔木，高可达 7 米，枝干屈曲有致。"],
+    ["树皮","灰褐色，光滑如去皮——周皮逐年整层剥落，故老干亦莹润，俗称\"无皮树\"。"],
+    ["叶","椭圆形，对生或近对生，长 3–7 厘米，全缘。"],
+    ["花","花径约 3–4 厘米，花瓣皱缩如绉纱，边缘作波状，有细长之爪。"],
+    ["花序","顶生圆锥花序，花簇密集，远望如缀彩云。"],
+    ["果","蒴果球状，成熟后室背开裂，种子具翅。"],
+  ],
+  分布: [
+    ["原产","中国长江流域及以南地区，为传统名花。"],
+    ["今布","全国广泛栽培，江苏、浙江、安徽、湖北、四川、广东诸省尤多。"],
+    ["习性","喜温暖湿润，喜光稍耐阴；耐旱、耐寒（−10℃）、耐瘠薄，适温 15–30℃。"],
+    ["栽培","春剪形，夏保水，秋施基肥；花后剪残序可促二次开花。"],
+  ],
+  识别: [
+    {法:"看树皮", 述:"光滑如去皮；轻挠树干，全树微颤——\"痒痒树\"。"},
+    {法:"观花瓣", 述:"边缘皱缩如绉纱，紫薇属最独特的印记。"},
+    {法:"辨花序", 述:"顶生圆锥花序，花簇密集如彩云。"},
+    {法:"查叶序", 述:"椭圆对生，全缘，先端短尖不呈长尾。"},
+    {法:"看花色", 述:"绯红、紫红、白色，同株花色恒定。"},
+  ],
+  近亲: [
+    {名:"大花紫薇", 学名:"<i>Lagerstroemia speciosa</i>", 花色:"紫红至粉紫", 区别:"叶长 10–25 厘米，花径 5–8 厘米，花瓣平展几乎不皱。"},
+    {名:"南紫薇", 学名:"<i>Lagerstroemia subcostata</i>", 花色:"白色，花小", 区别:"又名九芎；花径仅约 1–2 厘米，与紫薇皱瓣绯红迥异。"},
+    {名:"尾叶紫薇", 学名:"<i>Lagerstroemia caudata</i>", 花色:"白至淡紫", 区别:"叶先端尾状长尖（\"尾叶\"得名之由），紫薇仅短尖。"},
+  ],
+  口诀: ["紫薇千屈菜科，百日红名不虚传；","树皮光滑痒痒树，皱缩花瓣似绉纱；","六月盛夏正当时，百日不败花中仙。"],
+  趣闻: [
+    {题:"百日红", 文:"花期自夏徂秋长达百日，故名\"百日红\"，是夏秋最持久的观赏花木。"},
+    {题:"痒痒树之谜", 文:"轻挠树干上部，全树微颤如怕痒——一般认为是其木质致密、树冠重心高，振动传导效率极高所致。"},
+    {题:"紫微星象", 文:"古人以紫微星为帝星，紫薇与之同名相应；唐代中书省一度改称\"紫微省\"，省中遍植紫薇。"},
+    {题:"杜紫薇", 文:"杜牧官中书舍人、咏紫薇诗佳，人称\"杜紫薇\"——诗人与花互为别名。"},
+    {题:"市花", 文:"徐州、襄阳、咸阳等市以其为市花，寓长寿与繁荣。"},
+    {题:"入药", 文:"皮、叶、根皆可入药，民间用于清热解毒、活血止血（须遵医嘱）。"},
+  ],
+  物候: {
+    地:"长江流域（以武汉为例）",
+    观:"六月初始花，七月大盛，至国庆前后犹有残花。庭前、街角、公园水畔皆可遇。",
+    提:["最佳观赏：7 月中旬 – 8 月下旬，清晨带露时花色最鲜。",
+        "体验\"痒痒树\"：择光滑老干以指节轻挠，静观枝叶微颤。",
+        "拾果：10 月后蒴果开裂，可拾作标本。"],
+  },
+};
+
+/* 节气物候：leaf/bud/bloom 为树的状态参数（0–1），sky[顶,底]/ground 为天色地色 */
+const TERMS = [
+  {名:"立春",m:2, d:4,  leaf:0,  bud:.04,bloom:0, sky:["#e2e5de","#edeee6"],g:"#d8d4c2",观:"叶芽尚在鳞片内越冬，枝干裸露——正是读枝的季节。",为:"观察光滑的树皮与屈曲的枝态。"},
+  {名:"雨水",m:2, d:19, leaf:0,  bud:.07,bloom:0, sky:["#e1e6de","#eef0e5"],g:"#d6d2bd",观:"雨润枝头，芽体微微膨大。",为:"留意芽鳞是否透出一线新绿。"},
+  {名:"惊蛰",m:3, d:5,  leaf:.08,bud:.12,bloom:0, sky:["#dfe7dd","#eef1e3"],g:"#d2d0b3",观:"雷动虫醒，树液渐行，芽点转膨。",为:"挠一挠树干，感受\"痒痒树\"的传导。"},
+  {名:"春分",m:3, d:20, leaf:.18,bud:.16,bloom:0, sky:["#dde8db","#edf1e0"],g:"#cbcdb0",观:"嫩芽初绽，新叶自对生的芽位抽出。",为:"找一对\"对生\"的新叶——这是鉴定要点。"},
+  {名:"清明",m:4, d:5,  leaf:.35,bud:.2, bloom:0, sky:["#d9e9da","#ebf1dd"],g:"#bcc79a",观:"新叶展平，全树转嫩绿。",为:"量一量叶长：3–7 厘米为紫薇。"},
+  {名:"谷雨",m:4, d:20, leaf:.55,bud:.3, bloom:0, sky:["#d7ebdb","#ebf2de"],g:"#b1c191",观:"叶色转深，枝头酝酿花芽。",为:"此时修剪整形最宜。"},
+  {名:"立夏",m:5, d:5,  leaf:.8, bud:.45,bloom:0, sky:["#d6eddd","#edf4df"],g:"#a6bd87",观:"枝叶渐满，圆锥花序的骨架悄悄成形。",为:"追一次肥，为百日之花蓄力。"},
+  {名:"小满",m:5, d:21, leaf:.95,bud:.7, bloom:0, sky:["#d5edde","#eef4e0"],g:"#9fba80",观:"花蕾渐次饱满，粒粒如豆。",为:"找一找落在地上的去年蒴果。"},
+  {名:"芒种",m:6, d:5,  leaf:1,  bud:.9, bloom:.12,sky:["#d5edda","#eef3df"],g:"#9ab77c",观:"紫薇始花——第一朵皱瓣在梅雨里展开。",为:"记下始花日期，与去年比一比。"},
+  {名:"夏至",m:6, d:21, leaf:1,  bud:1,  bloom:.35,sky:["#d7eedd","#f0f4e0"],g:"#97b47a",观:"花开渐盛，白昼最长，蜂声渐密。",为:"白日看蜂足携粉，方知花蜜之盛。"},
+  {名:"小暑",m:7, d:7,  leaf:1,  bud:1,  bloom:.65,sky:["#daefdc","#f1f5e1"],g:"#95b177",观:"花开过半，\"半年花\"的节奏正劲。",为:"选一枝，画下皱瓣的波缘。",
+   诗:{题:"凝露堂前紫薇花两株，每自五月盛开，九月乃衰",代:"宋",人:"杨万里",句:["似痴如醉丽还佳，","露压风欺分外斜。","谁道花无红百日，","紫薇长放半年花。"]}},
+  {名:"大暑",m:7, d:22, leaf:1,  bud:1,  bloom:1,  sky:["#ddeede","#f2f5e2"],g:"#92ae74",观:"极盛——花团压枝，绯云不散，一年中最佳。",为:"清晨带露看花，颜色最鲜。"},
+  {名:"立秋",m:8, d:7,  leaf:1,  bud:1,  bloom:.9, sky:["#e1edda","#f2f1da"],g:"#a0b478",观:"秋来花不怯，仍压满枝头。",为:"花后剪去残序，可促二次开花。"},
+  {名:"处暑",m:8, d:23, leaf:1,  bud:1,  bloom:.75,sky:["#e6ecd8","#f2efd7"],g:"#a9b276",观:"暑气渐收，花势仍健。",为:"正午看清花色——同株花色恒定。"},
+  {名:"白露",m:9, d:7,  leaf:1,  bud:1,  bloom:.5, sky:["#e8ecd7","#f3efd4"],g:"#b0ac70",观:"晨有秋露，新花迎露而开——杜牧所咏正是此时。",为:"拍一张\"晓迎秋露\"的照片。",
+   诗:{题:"紫薇花",代:"唐",人:"杜牧",句:["晓迎秋露一枝新，","不占园中最上春。","桃李无言又何在，","向风偏笑艳阳人。"]}},
+  {名:"秋分",m:9, d:23, leaf:.95,bud:1,  bloom:.3, sky:["#ebe9d3","#f2ecd0"],g:"#bca464",观:"花开渐稀，枝头开始挂果。",为:"找一找青绿色的幼果。"},
+  {名:"寒露",m:10,d:8,  leaf:.88,bud:1,  bloom:.1, sky:["#eee5cd","#f0e6c8"],g:"#c19f5c",观:"尾花零星，蒴果转褐。",为:"收几枚未裂的蒴果做标本。"},
+  {名:"霜降",m:10,d:23, leaf:.75,bud:1,  bloom:0,  sky:["#ece0ca","#ede1c4"],g:"#bc9a56",观:"叶始染黄，蒴果三瓣裂开，翅果欲随风。",为:"摇一摇果枝，听种子沙沙。"},
+  {名:"立冬",m:11,d:7,  leaf:.45,bud:1,  bloom:0,  sky:["#e5ded0","#e9e3d1"],g:"#b2a278",观:"叶落大半，枝骨重现。",为:"年轮上的\"百日\"，此刻归零。"},
+  {名:"小雪",m:11,d:22, leaf:.15,bud:1,  bloom:0,  sky:["#e0dfd3","#e8e7db"],g:"#b5ab8d",观:"残叶将尽，树皮愈显光滑。",为:"以指轻挠，冬季的传导更明显。"},
+  {名:"大雪",m:12,d:7,  leaf:0,  bud:1,  bloom:0,  sky:["#dcded8","#e8eae5"],g:"#c0bcaa",观:"落叶归尽，唯余虬枝。",为:"读枝：屈曲之势此时最清楚。",雪:true},
+  {名:"冬至",m:12,d:21, leaf:0,  bud:.03,bloom:0,  sky:["#dbded9","#e8eae6"],g:"#c2beae",观:"一阳初生，芽内已孕来年之叶。",为:"紫薇当年生枝开花——来年之花，已在此刻的枝头孕育。",
+   诗:{题:"紫薇花",代:"唐",人:"白居易",句:["丝纶阁下文书静，","钟鼓楼中刻漏长。","独坐黄昏谁是伴，","紫薇花对紫微郎。"]}},
+  {名:"小寒",m:1, d:5,  leaf:0,  bud:.05,bloom:0,  sky:["#dcded9","#e9eae6"],g:"#c4c0b0",观:"数九寒天，紫薇可耐 −10℃。",为:"为小树根部培土防冻。"},
+  {名:"大寒",m:1, d:20, leaf:0,  bud:.07,bloom:0,  sky:["#dde0da","#eaece8"],g:"#c6c2b3",观:"寒尽觉春生，又是一轮物候之始。",为:"翻回立春，看一年轮回。"},
+];
+
+/* ═══════════════ 场刊渲染 ═══════════════ */
+(function renderProgram(){
+  const $ = s => document.querySelector(s);
+  $("#pgArch").innerHTML = FLOWER.档案.map(r=>`<tr><th scope="row">${r[0]}</th><td>${r[1]}</td></tr>`).join("");
+  $("#pgMorph").innerHTML = FLOWER.形态.map(r=>`<p><b>${r[0]}</b>　${r[1]}</p>`).join("");
+  $("#pgDist").innerHTML  = FLOWER.分布.map(r=>`<p><b>${r[0]}</b>　${r[1]}</p>`).join("");
+  $("#pgKin").innerHTML = FLOWER.近亲.map(k=>`<div><span class="kn">${k.名}</span><span class="kl">${k.学名.replace(/<\/?i>/g,"")}</span><p>${k.区别}</p></div>`).join("");
+  $("#pgCmp").innerHTML = `<thead><tr><th>名称</th><th>学名</th><th>花色</th><th>与紫薇之差异</th></tr></thead><tbody>`+
+    FLOWER.近亲.map(k=>`<tr><td>${k.名}</td><td>${k.学名}</td><td>${k.花色}</td><td>${k.区别}</td></tr>`).join("")+`</tbody>`;
+  $("#pgRecog").innerHTML = FLOWER.识别.map(r=>`<li><span><b>${r.法}——</b>${r.述}</span></li>`).join("");
+  $("#pgMnem").innerHTML = FLOWER.口诀.join("<br>");
+  $("#pgFacts").innerHTML = FLOWER.趣闻.map(f=>`<p><b>${f.题}</b>　${f.文}</p>`).join("");
+  $("#pgPheno").innerHTML = `<div class="loc">${FLOWER.物候.地}</div><p>${FLOWER.物候.观}</p><ul>${FLOWER.物候.提.map(t=>`<li>${t}</li>`).join("")}</ul>`;
+})();
+
+/* ═══════════════ 剧场引擎 ═══════════════ */
+(function theater(){
+  const $ = s => document.querySelector(s);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const fol   = [...document.querySelectorAll("#foliage .fol")];
+  const blms  = [...document.querySelectorAll("#blooms .blm")];
+  const buds  = [...document.querySelectorAll("#buds .bud")];
+  const skyTop= $("#skyTop"), skyBot = $("#skyBot"), ground = $("#ground");
+  const stage = $("#stage"), particles = $("#particles");
+
+  /* 状态：当前参数值（数值逐帧补间） */
+  const cur = {leaf:0,bud:0,bloom:0, skyTop:"#e2e5de", skyBot:"#edeee6", ground:"#d8d4c2"};
+  let from = null, to = null, t0 = 0, TWEEN_MS = 1100;
+  let termIdx = 0;
+
+  const hex2rgb = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const rgb2hex = c => "#" + c.map(v=>Math.round(v).toString(16).padStart(2,"0")).join("");
+  const mix = (a,b,k)=>rgb2hex(hex2rgb(a).map((v,i)=>v+(hex2rgb(b)[i]-v)*k));
+  const ease = k => k<.5 ? 2*k*k : 1-((-2*k+2)**2)/2;
+
+  function applyState(leaf,bud,bloom,sT,sB,g){
+    const setN = (groups,n)=>{ // 内→外逐簇显现，边界簇用透明度过渡
+      const total = groups.length;
+      const f = n*total;
+      const full = Math.floor(f), frac = f-full;
+      groups.forEach((gEl,i)=>{
+        if(i<full) gEl.style.opacity = 1;
+        else if(i===full && frac>0) gEl.style.opacity = frac.toFixed(2);
+        else gEl.style.opacity = 0;
+      });
+    };
+    setN(fol,leaf); setN(buds,bud); setN(blms,bloom);
+    skyTop.setAttribute("stop-color",sT);
+    skyBot.setAttribute("stop-color",sB);
+    ground.setAttribute("fill",g);
+    return {leaf,bud,bloom};
+  }
+
+  /* 粒子：飞花 / 落雪 */
+  const svgNS = "http://www.w3.org/2000/svg";
+  let lastSpawn = 0;
+  function spawn(bloomDelta, snowing){
+    const now = performance.now();
+    if(now - lastSpawn < 260) return;
+    lastSpawn = now;
+    const el = document.createElementNS(svgNS, snowing ? "circle" : "path");
+    if(snowing){
+      el.setAttribute("r", (1.2+Math.random()*1.6).toFixed(1));
+      el.setAttribute("fill","rgba(255,255,255,.85)");
+    } else {
+      el.setAttribute("d","M0 0 C -2 -10, -4 -16, -7 -22 Q -9.5 -27 -6 -28.5 Q 0 -31 6 -28.5 Q 9.5 -27 7 -22 C 4 -16, 2 -10, 0 0 Z");
+      el.setAttribute("fill", Math.random()<.5?"#b34a75":"#c2618a");
+      el.setAttribute("transform","scale(.55)");
+    }
+    const x = 60 + Math.random()*560;
+    particles.appendChild(el);
+    const y0 = 30 + Math.random()*120, dur = 3800+Math.random()*2600, s0 = now;
+    (function step(nw){
+      const k = (nw - s0)/dur;
+      if(k>=1){ el.remove(); return; }
+      const y = y0 + k*420, xk = x + Math.sin(k*5+1)*30*(snowing?.5:1);
+      if(snowing){ el.setAttribute("cx",xk); el.setAttribute("cy",y); }
+      else el.setAttribute("transform",`translate(${xk.toFixed(1)} ${y.toFixed(1)}) rotate(${(k*160)%360}) scale(${(.55*(1-k*.4)).toFixed(2)})`);
+      el.setAttribute("opacity",(1-k).toFixed(2));
+      requestAnimationFrame(step);
+    })(s0);
+  }
+
+  let snowNow = false;
+  function ambient(now){
+    const t = TERMS[termIdx];
+    if(!reduced && to === null){
+      // 静止时：花期自然落花 / 落雪
+      if(t.雪 && Math.random()<.02) spawn(0,true);
+      else if(t.bloom>.2 && Math.random()<.015) spawn(0,false);
+    }
+    requestAnimationFrame(ambient);
+  }
+  requestAnimationFrame(ambient);
+
+  /* 面板 */
+  function paintPanel(i){
+    const t = TERMS[i];
+    $("#ncName").textContent = t.名;
+    const nx = TERMS[(i+1)%24];
+    $("#ncDate").textContent = `约 ${t.m}月${t.d}日 – ${nx.m}月${nx.d}日`;
+    $("#ncObserve").textContent = t.观;
+    $("#ncDo").innerHTML = `<b>可为</b>${t.为}`;
+    const poemEl = $("#ncPoem");
+    if(t.诗){
+      $("#ncPoemLines").innerHTML = t.诗.句.join("<br>");
+      $("#ncPoemAuthor").textContent = `${t.诗.代} · ${t.诗.人}《${t.诗.题}》`;
+      poemEl.style.display = "";
+      requestAnimationFrame(()=>poemEl.classList.add("show"));
+    } else {
+      poemEl.classList.remove("show");
+      poemEl.style.display = "none";
+    }
+    $("#dialProgress").textContent = `第 ${i+1} / 24 气 · ${t.名}`;
+    document.querySelectorAll(".dial-tick").forEach((el,j)=>el.classList.toggle("cur", j===i));
+    $("#dialTrack").setAttribute("aria-valuenow", i+1);
+    $("#dialTrack").setAttribute("aria-valuetext", t.名);
+    snowNow = !!t.雪;
+  }
+
+  /* 切换节气（带补间） */
+  function goTerm(i, instant){
+    i = ((i%24)+24)%24;
+    termIdx = i;
+    const t = TERMS[i];
+    const target = {leaf:t.leaf,bud:t.bud,bloom:t.bloom, skyTop:t.sky[0], skyBot:t.sky[1], ground:t.g};
+    paintPanel(i);
+    if(instant || reduced){
+      from = null; to = null;
+      applyState(target.leaf,target.bud,target.bloom,target.skyTop,target.skyBot,target.ground);
+      cur.leaf=target.leaf; cur.bud=target.bud; cur.bloom=target.bloom;
+      return;
+    }
+    from = {...cur}; to = target; t0 = performance.now();
+    const spanBloom = from.bloom - to.bloom;
+    (function tween(now){
+      if(!to) return;
+      const k = Math.min((now-t0)/TWEEN_MS, 1), e = ease(k);
+      const leaf  = from.leaf  + (to.leaf -from.leaf )*e;
+      const bud   = from.bud   + (to.bud  -from.bud  )*e;
+      const bloom = from.bloom + (to.bloom-from.bloom)*e;
+      const sT = mix(from.skyTop,to.skyTop,e), sB = mix(from.skyBot,to.skyBot,e), g = mix(from.ground,to.ground,e);
+      applyState(leaf,bud,bloom,sT,sB,g);
+      cur.leaf=leaf; cur.bud=bud; cur.bloom=bloom;
+      if(spanBloom>0.08 && Math.random()<.12) spawn(0,false);
+      if(k<1) requestAnimationFrame(tween);
+      else { to = null; }
+    })(t0);
+  }
+
+  /* 日晷 UI */
+  const track = $("#dialTrack"), ticks = $("#dialTicks"), sun = $("#dialSun");
+  TERMS.forEach((t,i)=>{
+    const el = document.createElement("div");
+    el.className = "dial-tick" + (i%2 ? "" : " major");
+    el.style.left = (i/23*100) + "%";
+    el.innerHTML = `<span class="t-label ${i%2?"duo":""}">${t.名}</span>`;
+    el.addEventListener("click", e=>{ e.stopPropagation(); stopPlay(); goTerm(i); });
+    ticks.appendChild(el);
+  });
+  function placeSun(i){ sun.style.left = (i/23*100)+"%"; }
+  function trackIndexFromEvent(ev){
+    const r = track.getBoundingClientRect();
+    const k = Math.min(Math.max((ev.clientX - r.left)/r.width, 0), 1);
+    return Math.round(k*23);
+  }
+  let dragging = false;
+  track.addEventListener("pointerdown", ev=>{
+    stopPlay(); dragging = true;
+    try{ track.setPointerCapture(ev.pointerId); }catch(_){/* 指针已释放时忽略 */}
+    const i = trackIndexFromEvent(ev); placeSun(i); goTerm(i);
+  });
+  track.addEventListener("pointermove", ev=>{
+    if(!dragging) return;
+    const i = trackIndexFromEvent(ev); placeSun(i); goTerm(i);
+  });
+  track.addEventListener("pointerup", ()=> dragging=false);
+  track.addEventListener("pointercancel", ()=> dragging=false);
+  track.addEventListener("keydown", ev=>{
+    if(ev.key==="ArrowRight"){ ev.preventDefault(); stopPlay(); goTerm(termIdx+1); placeSun(termIdx); }
+    if(ev.key==="ArrowLeft"){  ev.preventDefault(); stopPlay(); goTerm(termIdx-1); placeSun(termIdx); }
+    if(ev.key==="Home"){ ev.preventDefault(); stopPlay(); goTerm(0); placeSun(0); }
+    if(ev.key==="End"){  ev.preventDefault(); stopPlay(); goTerm(23); placeSun(23); }
+  });
+
+  /* 滚轮微调（在舞台上） */
+  let wheelLock = 0;
+  stage.addEventListener("wheel", ev=>{
+    const now = performance.now();
+    if(now - wheelLock < 220) return;
+    if(Math.abs(ev.deltaY) < 8) return;
+    ev.preventDefault();
+    wheelLock = now;
+    stopPlay();
+    goTerm(termIdx + (ev.deltaY>0?1:-1));
+    placeSun(termIdx);
+  },{passive:false});
+
+  /* 播放 */
+  let playTimer = null;
+  const btnPlay = $("#btnPlay");
+  function stopPlay(){
+    if(playTimer){ clearInterval(playTimer); playTimer=null; btnPlay.textContent="转一年"; }
+  }
+  btnPlay.addEventListener("click", ()=>{
+    if(playTimer){ stopPlay(); return; }
+    btnPlay.textContent = "暂停";
+    playTimer = setInterval(()=>{
+      goTerm(termIdx+1);
+      placeSun(termIdx);
+    }, 1600);
+    goTerm(termIdx+1); placeSun(termIdx);
+  });
+  $("#btnPrev").addEventListener("click", ()=>{ stopPlay(); goTerm(termIdx-1); placeSun(termIdx); });
+  $("#btnNext").addEventListener("click", ()=>{ stopPlay(); goTerm(termIdx+1); placeSun(termIdx); });
+  $("#btnToday").addEventListener("click", ()=>{ stopPlay(); const i=todayIndex(); goTerm(i); placeSun(i); });
+
+  /* 今日节气：取「开始日期 ≤ 今天」的最后一个节气；1 月初（元旦至小寒前）仍属去年冬至段 */
+  function todayIndex(){
+    const d = new Date(), val = (d.getMonth()+1)*100 + d.getDate();
+    let best = -1, bestVal = -1;
+    for(let i=0;i<24;i++){
+      const v = TERMS[i].m*100 + TERMS[i].d;
+      if(v <= val && v > bestVal){ bestVal = v; best = i; }
+    }
+    return best === -1 ? 21 : best;   // 1/1–1/4 → 冬至段
+  }
+
+  /* 幕后册页 */
+  const bs = $("#backstage"), scrim = $("#scrim");
+  function openBS(){ bs.classList.add("on"); scrim.classList.add("on"); bs.setAttribute("aria-hidden","false"); }
+  function closeBS(){ bs.classList.remove("on"); scrim.classList.remove("on"); bs.setAttribute("aria-hidden","true"); }
+  $("#btnBackstage").addEventListener("click", openBS);
+  $("#btnCloseBackstage").addEventListener("click", closeBS);
+  scrim.addEventListener("click", closeBS);
+  window.addEventListener("keydown", e=>{ if(e.key==="Escape") closeBS(); });
+
+  /* 初始化：定位到今日 */
+  const i0 = todayIndex();
+  placeSun(i0);
+  goTerm(i0, true);
+})();
+</script>
+</body>
+</html>
